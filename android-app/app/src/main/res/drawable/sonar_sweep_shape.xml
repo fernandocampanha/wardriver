@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sonar, braco de varredura (gira por sonar_spin). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="56dp"
+    android:height="56dp"
+    android:viewportWidth="56"
+    android:viewportHeight="56">
+    <path
+        android:fillColor="#4D0A819F"
+        android:pathData="M28,28 L28,4 A24,24 0 0,1 48.8,16 Z" />
+    <path
+        android:strokeColor="@color/signal"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M28,28 L28,4" />
+</vector>

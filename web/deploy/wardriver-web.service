@@ -1,0 +1,24 @@
+[Unit]
+Description=Wardriver Web (API + frontend)
+After=network.target mysql.service
+
+[Service]
+User=wardriver
+Group=wardriver
+WorkingDirectory=/opt/wardriver-web/backend
+EnvironmentFile=/etc/wardriver-web.env
+ExecStart=/opt/wardriver-web/backend/.venv/bin/uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8080 --no-proxy-headers --no-server-header
+Restart=on-failure
+RestartSec=3
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

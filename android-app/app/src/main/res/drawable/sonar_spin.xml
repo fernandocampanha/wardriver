@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gira sozinho quando usado como indeterminateDrawable de um ProgressBar (sem codigo). -->
+<animated-rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/sonar_sweep_shape"
+    android:pivotX="50%"
+    android:pivotY="50%" />

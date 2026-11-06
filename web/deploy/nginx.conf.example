@@ -1,0 +1,20 @@
+limit_req_zone $binary_remote_addr zone=wd_login:1m rate=5r/m;
+
+server {
+    listen 443 ssl http2;
+    server_name wardriver.example.com;
+    ssl_certificate     /etc/letsencrypt/live/wardriver.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/wardriver.example.com/privkey.pem;
+
+    client_max_body_size 30m;
+
+    location = /api/login {
+        limit_req zone=wd_login burst=5 nodelay;
+        include /etc/nginx/wardriver-proxy.conf;
+    }
+    location / {
+        include /etc/nginx/wardriver-proxy.conf;
+    }
+}
+server { listen 80; server_name wardriver.example.com; return 301 https://$host$request_uri; }
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Identidade "radar de sinais", a mesma do site (web/frontend/src/styles.css). -->
+<resources>
+    <color name="paper">#EEF3FA</color>
+    <color name="panel">#FFFFFF</color>
+    <color name="panel_2">#F5F8FD</color>
+    <color name="ink">#0C1730</color>
+    <color name="ink_2">#4A5A78</color>
+    <color name="muted">#8392AD</color>
+    <color name="rule">#D5DEEC</color>
+    <color name="rule_strong">#A9B8D2</color>
+    <color name="signal">#0A819F</color>
+    <color name="signal_soft">#D9F1F7</color>
+    <color name="signal_2_soft">#E8E5FB</color>
+    <color name="signal_2">#5A4DE0</color>
+    <color name="radar_bg">#060A14</color>
+    <color name="radar_fg">#22E1FF</color>
+    <color name="radar_blip">#FF4D6A</color>
+</resources>

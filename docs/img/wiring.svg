@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 720" width="980" height="720" font-family="DejaVu Sans, Verdana, Arial, sans-serif">
+<title>Ligações elétricas do protótipo: ESP32 DevKit, GPS GY-GPS6MV2 e OLED SSD1306</title>
+<rect x="0" y="0" width="980" height="720" fill="#ffffff"/>
+<rect x="2" y="2" width="976" height="716" rx="10" fill="none" stroke="#d1d5db" stroke-width="2"/>
+<text x="490.0" y="34" font-size="20" text-anchor="middle" font-weight="bold" fill="#1f2937">Wardriver ESP32 — ligações elétricas</text>
+<text x="490.0" y="56" font-size="12.5" text-anchor="middle" font-weight="normal" fill="#6b7280">diagrama lógico (os pinos reais ficam nas duas bordas do DevKit; ver a tabela do README)</text>
+<rect x="28" y="84" width="150" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+<text x="103" y="118" font-size="15" text-anchor="middle" font-weight="bold" fill="#1f2937">Powerbank</text>
+<text x="103" y="140" font-size="13" text-anchor="middle" font-weight="normal" fill="#1f2937">5 V / USB</text>
+<text x="103" y="158" font-size="12" text-anchor="middle" font-weight="normal" fill="#6b7280">(qualquer)</text>
+<path d="M 178,106 L 254,106" fill="none" stroke="#0369a1" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="216" y="96" font-size="12" text-anchor="middle" font-weight="normal" fill="#0369a1">micro-USB</text>
+<rect x="250" y="74" width="190" height="600" rx="10" fill="#f3f4f6" stroke="#374151" stroke-width="2.5"/>
+<rect x="254" y="92" width="34" height="28" rx="3" fill="#9ca3af" stroke="#374151" stroke-width="1.5"/>
+<text x="271" y="111" font-size="10.5" text-anchor="middle" font-weight="bold" fill="#111827">USB</text>
+<text x="345" y="150" font-size="16" text-anchor="middle" font-weight="bold" fill="#1f2937">ESP32 DevKit V1</text>
+<text x="345" y="170" font-size="12" text-anchor="middle" font-weight="normal" fill="#4b5563">30 pinos · ESP32-WROOM-32</text>
+<text x="345" y="188" font-size="11.5" text-anchor="middle" font-weight="normal" fill="#6b7280">4 MB flash · USB-serial</text>
+<text x="430" y="125" font-size="13.5" text-anchor="end" font-weight="normal" fill="#9ca3af">3V3 (não usado)</text>
+<circle cx="440" cy="120" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="430" y="235" font-size="13.5" text-anchor="end" font-weight="bold" fill="#111827">VIN  (5 V)</text>
+<circle cx="440" cy="230" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="430" y="285" font-size="13.5" text-anchor="end" font-weight="bold" fill="#111827">GND</text>
+<circle cx="440" cy="280" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="430" y="375" font-size="13.5" text-anchor="end" font-weight="bold" fill="#111827">GPIO16 · RX2</text>
+<circle cx="440" cy="370" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="430" y="425" font-size="13.5" text-anchor="end" font-weight="bold" fill="#111827">GPIO17 · TX2</text>
+<circle cx="440" cy="420" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="430" y="525" font-size="13.5" text-anchor="end" font-weight="bold" fill="#111827">GPIO22 · SCL</text>
+<circle cx="440" cy="520" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="430" y="575" font-size="13.5" text-anchor="end" font-weight="bold" fill="#111827">GPIO23 · SDA</text>
+<circle cx="440" cy="570" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<rect x="700" y="160" width="240" height="250" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/>
+<text x="820" y="188" font-size="16" text-anchor="middle" font-weight="bold" fill="#1f2937">GY-GPS6MV2</text>
+<text x="820" y="207" font-size="12" text-anchor="middle" font-weight="normal" fill="#1e3a8a">u-blox NEO-6M · UART 9600 8N1</text>
+<circle cx="700" cy="250" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="255" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">VCC</text>
+<circle cx="700" cy="300" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="305" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">RX</text>
+<circle cx="700" cy="350" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="355" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">TX</text>
+<circle cx="700" cy="395" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="400" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">GND</text>
+<text x="930" y="262" font-size="10.5" text-anchor="end" font-weight="normal" fill="#1e3a8a">5 V (regulador</text>
+<text x="930" y="275" font-size="10.5" text-anchor="end" font-weight="normal" fill="#1e3a8a">3,3 V na placa)</text>
+<rect x="740" y="84" width="180" height="46" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+<text x="830" y="105" font-size="12.5" text-anchor="middle" font-weight="bold" fill="#1f2937">Antena cerâmica (patch)</text>
+<text x="830" y="122" font-size="11.5" text-anchor="middle" font-weight="normal" fill="#92400e">cabo U.FL (pigtail)</text>
+<path d="M 830,130 L 830,160" fill="none" stroke="#b45309" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="700" y="470" width="240" height="220" rx="10" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5"/>
+<text x="820" y="498" font-size="16" text-anchor="middle" font-weight="bold" fill="#1f2937">OLED SSD1306 0,96"</text>
+<text x="820" y="517" font-size="12" text-anchor="middle" font-weight="normal" fill="#4c1d95">128×64 · I²C · endereço 0x3C</text>
+<circle cx="700" cy="550" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="555" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">GND</text>
+<circle cx="700" cy="590" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="595" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">VDD</text>
+<circle cx="700" cy="630" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="635" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">SCK</text>
+<circle cx="700" cy="670" r="5" fill="#fbbf24" stroke="#374151" stroke-width="1.5"/>
+<text x="714" y="675" font-size="13.5" text-anchor="start" font-weight="bold" fill="#1f2937">SDA</text>
+<text x="930" y="584" font-size="10.5" text-anchor="end" font-weight="normal" fill="#4c1d95">5 V (regulador</text>
+<text x="930" y="597" font-size="10.5" text-anchor="end" font-weight="normal" fill="#4c1d95">na placa)</text>
+<path d="M 440,230 L 570,230 L 570,250 L 700,250" fill="none" stroke="#ffffff" stroke-width="9.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,230 L 570,230 L 570,250 L 700,250" fill="none" stroke="#d32f2f" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 520,230 L 520,590 L 700,590" fill="none" stroke="#ffffff" stroke-width="9.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 520,230 L 520,590 L 700,590" fill="none" stroke="#d32f2f" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="520" cy="230" r="5.5" fill="#d32f2f" stroke="#ffffff" stroke-width="1.5"/>
+<path d="M 440,280 L 480,280 L 480,550 L 700,550" fill="none" stroke="#ffffff" stroke-width="9.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,280 L 480,280 L 480,550 L 700,550" fill="none" stroke="#212121" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="480" cy="280" r="5.5" fill="#212121" stroke="#ffffff" stroke-width="1.5"/>
+<path d="M 480,395 L 700,395" fill="none" stroke="#ffffff" stroke-width="9.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 480,395 L 700,395" fill="none" stroke="#212121" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="480" cy="395" r="5.5" fill="#212121" stroke="#ffffff" stroke-width="1.5"/>
+<path d="M 700,350 L 650,350 L 650,370 L 440,370" fill="none" stroke="#ffffff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 700,350 L 650,350 L 650,370 L 440,370" fill="none" stroke="#2e7d32" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,420 L 610,420 L 610,300 L 700,300" fill="none" stroke="#ffffff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,420 L 610,420 L 610,300 L 700,300" fill="none" stroke="#ef6c00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,520 L 640,520 L 640,630 L 700,630" fill="none" stroke="#ffffff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,520 L 640,520 L 640,630 L 700,630" fill="none" stroke="#1565c0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,570 L 600,570 L 600,670 L 700,670" fill="none" stroke="#ffffff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M 440,570 L 600,570 L 600,670 L 700,670" fill="none" stroke="#6a1b9a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="548" y="364" font-size="11.5" text-anchor="middle" font-weight="bold" fill="#2e7d32">UART RX</text>
+<text x="560" y="414" font-size="11.5" text-anchor="middle" font-weight="bold" fill="#ef6c00">UART TX</text>
+<text x="575" y="513" font-size="11.5" text-anchor="middle" font-weight="bold" fill="#1565c0">SCL</text>
+<text x="560" y="563" font-size="11.5" text-anchor="middle" font-weight="bold" fill="#6a1b9a">SDA</text>
+<text x="632" y="322" font-size="10.5" text-anchor="middle" font-weight="normal" fill="#6b7280">TX ↔ RX cruzados</text>
+<rect x="28" y="300" width="196" height="286" rx="8" fill="#f9fafb" stroke="#d1d5db" stroke-width="1.5"/>
+<text x="40" y="324" font-size="14" text-anchor="start" font-weight="bold" fill="#1f2937">Legenda</text>
+<line x1="40" y1="352" x2="74" y2="352" stroke="#d32f2f" stroke-width="4" stroke-linecap="round"/>
+<text x="82" y="356" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">5 V (VIN → GPS e OLED)</text>
+<line x1="40" y1="378" x2="74" y2="378" stroke="#212121" stroke-width="4" stroke-linecap="round"/>
+<text x="82" y="382" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">GND comum</text>
+<line x1="40" y1="404" x2="74" y2="404" stroke="#2e7d32" stroke-width="4" stroke-linecap="round"/>
+<text x="82" y="408" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">GPS TX → ESP32 RX2</text>
+<line x1="40" y1="430" x2="74" y2="430" stroke="#ef6c00" stroke-width="4" stroke-linecap="round"/>
+<text x="82" y="434" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">ESP32 TX2 → GPS RX</text>
+<line x1="40" y1="456" x2="74" y2="456" stroke="#1565c0" stroke-width="4" stroke-linecap="round"/>
+<text x="82" y="460" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">I²C SCL (GPIO22)</text>
+<line x1="40" y1="482" x2="74" y2="482" stroke="#6a1b9a" stroke-width="4" stroke-linecap="round"/>
+<text x="82" y="486" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">I²C SDA (GPIO23)</text>
+<text x="40" y="522" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">● ponto = ligação (junção)</text>
+<text x="40" y="543" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">cruzamento sem ponto</text>
+<text x="40" y="559" font-size="11.5" text-anchor="start" font-weight="normal" fill="#1f2937">= fios NÃO conectados</text>
+<text x="40" y="578" font-size="11.5" text-anchor="start" font-weight="bold" fill="#1f2937">Lógica de sinal: 3,3 V</text>
+</svg>

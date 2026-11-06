@@ -1,0 +1,258 @@
+menu "Wardriver Configuration"
+
+    menu "GPS (UART2)"
+        config WARDRIVER_GPS_UART_NUM
+            int "Numero da UART do GPS"
+            default 2
+            range 0 2
+
+        config WARDRIVER_GPS_RX_GPIO
+            int "GPIO RX do ESP32 (recebe do TX do GPS)"
+            default 16
+            help
+                Pino RX2 padrao do ESP32. Recebe as sentencas NMEA enviadas pelo
+                GPS ($GPRMC / $GPGGA).
+
+        config WARDRIVER_GPS_TX_GPIO
+            int "GPIO TX do ESP32 (envia para o RX do GPS)"
+            default 17
+            help
+                Pino TX2 padrao. O GY-GPS6MV2 nao precisa receber comandos para
+                funcionar no modo padrao, mas o pino fica reservado para
+                configuracao futura via protocolo UBX.
+
+        config WARDRIVER_GPS_BAUD_RATE
+            int "Baud rate do GPS"
+            default 9600
+            help
+                9600 e o padrao de fabrica do NEO-6M / GY-GPS6MV2.
+    endmenu
+
+    menu "Armazenamento (SPIFFS interno)"
+        config WARDRIVER_FLASH_STORAGE_MOUNT_POINT
+            string "Ponto de montagem"
+            default "/spiffs"
+
+        config WARDRIVER_FLASH_STORAGE_PARTITION_LABEL
+            string "Rotulo da particao (partitions.csv)"
+            default "storage"
+            help
+                Deve bater com o nome da particao do tipo "data, spiffs" em
+                partitions.csv (particao "storage", ~2.4MB na flash de 4MB).
+                Memoria interna do ESP32, onde as capturas ficam ate serem
+                sincronizadas pelo celular via Bluetooth — sincronize com
+                regularidade para nao esgotar o espaco numa coleta longa.
+    endmenu
+
+    menu "Display OLED (I2C, SSD1306 0.96\")"
+        config WARDRIVER_OLED_ENABLED
+            bool "Display OLED presente no hardware"
+            default y
+            help
+                Desative se o dispositivo estiver montado sem display — o
+                firmware continua capturando e gravando normalmente, apenas
+                sem feedback visual de status.
+
+        config WARDRIVER_OLED_SDA_GPIO
+            int "GPIO SDA"
+            default 23
+            depends on WARDRIVER_OLED_ENABLED
+            help
+                Fiacao fisica atual: display soldado direto na PCB final
+                (montagem do zero, jumpers soldados encurtados). Alimentado
+                em 5V (regulador on-board do modulo cuida do nivel de logica
+                do I2C).
+
+        config WARDRIVER_OLED_SCL_GPIO
+            int "GPIO SCL"
+            default 22
+            depends on WARDRIVER_OLED_ENABLED
+
+        config WARDRIVER_OLED_I2C_ADDR
+            hex "Endereco I2C do SSD1306"
+            default 0x3C
+            depends on WARDRIVER_OLED_ENABLED
+            help
+                0x3C e o mais comum. Alguns modulos usam 0x3D — se a tela nao
+                acender, essa e a primeira coisa a testar.
+
+        config WARDRIVER_OLED_FULL_REINIT_INTERVAL_S
+            int "Reinicializacao a frio periodica do painel, em segundos (0 = desligada)"
+            default 300
+            range 0 86400
+            depends on WARDRIVER_OLED_ENABLED
+            help
+                Alem de reafirmar a configuracao do painel a cada ~1 s (o que reacende um
+                SSD1306 que resetou por oscilacao de tensao), o guardiao do OLED faz, nesse
+                intervalo, uma reinicializacao completa: display OFF e charge pump desligado e
+                religado. Cobre um painel preso num estado que a reconfiguracao idempotente nao
+                desfaz. Pode causar um piscar breve da tela; aumente o intervalo ou use 0 se
+                incomodar.
+
+        config WARDRIVER_OLED_HEARTBEAT
+            bool "Pontinho piscando no canto da tela (indicador de que a tela esta viva)"
+            default y
+            depends on WARDRIVER_OLED_ENABLED
+            help
+                Um quadradinho no canto superior direito que muda a cada quadro enviado (~1 Hz).
+                Se a tela estiver ligada mas o ponto parou de piscar, o painel ou o firmware
+                congelou — distingue "apagada" de "travada" de "ok" so de olhar.
+    endmenu
+
+    menu "Captura Wi-Fi"
+        config WARDRIVER_CHANNEL_HOPPING
+            bool "Channel hopping: percorrer todos os canais em vez de ficar num so"
+            default y
+            help
+                O ESP32 classico so ouve 2,4 GHz; com o hopping o radio percorre os canais
+                de WARDRIVER_HOP_FIRST_CHANNEL a WARDRIVER_HOP_LAST_CHANNEL em sequencia e
+                volta ao comeco. Um AP e ouvido so enquanto o radio esta no canal dele
+                (beacon a cada ~102 ms), entao cada canal precisa de pelo menos ~110 ms.
+                Cobre redes e revelacoes de SSID (probe response, association request) de
+                TODOS os canais, ao custo de ouvir cada um por menos tempo do que o canal
+                fixo. Desligue para voltar ao canal fixo (WARDRIVER_WIFI_CHANNEL).
+
+                Efeito colateral a observar em campo: trocar de canal muitas vezes por
+                segundo mexe na coexistencia Wi-Fi + Bluetooth (ver BACKLOG.md item 1). Se
+                a conexao com o celular ficar instavel, desligue esta opcao.
+
+        config WARDRIVER_HOP_FIRST_CHANNEL
+            int "Primeiro canal do hopping"
+            default 1
+            range 1 13
+            depends on WARDRIVER_CHANNEL_HOPPING
+
+        config WARDRIVER_HOP_LAST_CHANNEL
+            int "Ultimo canal do hopping"
+            default 13
+            range 1 13
+            depends on WARDRIVER_CHANNEL_HOPPING
+            help
+                13 e o maior canal permitido no Brasil (o 14 e so do Japao). O firmware
+                ajusta o pais do radio para 1-13 no boot.
+
+        config WARDRIVER_HOP_DWELL_MS
+            int "Tempo em cada canal comum, em ms"
+            default 110
+            range 50 1000
+            depends on WARDRIVER_CHANNEL_HOPPING
+            help
+                Um beacon sai a cada ~102 ms; abaixo disso pode-se passar pelo canal sem ouvir
+                um AP. 110 ms garante ao menos 1 beacon por passagem.
+
+        config WARDRIVER_HOP_DWELL_MAIN_MS
+            int "Tempo em cada um dos canais 1, 6 e 11, em ms"
+            default 200
+            range 50 1000
+            depends on WARDRIVER_CHANNEL_HOPPING
+            help
+                Os canais 1, 6 e 11 concentram quase todos os APs (sao os que nao se sobrepoem),
+                entao ficam mais tempo. Com os padroes, uma volta completa (13 canais) leva ~1,7 s.
+
+        config WARDRIVER_WIFI_CHANNEL
+            int "Canal Wi-Fi fixo (usado quando o channel hopping esta desligado)"
+            default 6
+            range 1 13
+            help
+                Canal unico de captura quando WARDRIVER_CHANNEL_HOPPING esta desligado:
+                captura ~100% dos beacons daquele canal, sem ouvir os demais.
+
+        config WARDRIVER_LOG_REWRITE_INTERVAL_MS
+            int "Intervalo minimo entre regravacoes da mesma rede no log, em ms"
+            default 2000
+            help
+                AP transmite beacon a cada ~100ms; sem esse throttle o
+                on_beacon grava um registro por beacon recebido e enche o
+                storage em minutos. Cada BSSID so e regravado (posicao/RSSI
+                atualizados) quando ja fez esse tempo desde a ultima gravacao
+                dele — a 1a deteccao de cada rede nova, e qualquer revelacao
+                de SSID antes oculto (ver ssid_just_revealed em main.c), sao
+                sempre gravadas na hora, independente deste valor.
+
+                Baixado de 10000 para 2000 (2026-08-19, ver BACKLOG.md item
+                11): numa passagem de carro, a janela de alcance de um AP
+                pode durar so alguns segundos — com 10s so da tempo de
+                registrar 1-2 amostras de RSSI/posicao por rede, perdendo
+                granularidade para triangulacao. 2s ainda filtra a esmagadora
+                maioria dos beacons (~20x menos escrita que gravar todo
+                beacon) mas guarda de 3 a 5x mais amostras por passagem.
+                Registro binario tem so ~71 bytes (ver wardriver_record.h) e
+                a particao de storage tem ~2.4MB — folga ampla mesmo no
+                intervalo mais curto, mas sincronize com regularidade.
+
+        config WARDRIVER_DEDUP_RESET_HEAP_FLOOR_BYTES
+            int "Piso de heap livre (bytes) para zerar a tabela de deduplicacao em RAM"
+            default 40960
+            help
+                A captura agora roda continuamente entre uma sincronizacao e
+                outra (botao "Sincronizar" no app, ver bt_spp_sync.c) — sem
+                rotacao automatica por tempo, a tabela de deduplicacao do
+                wifi_sniffer (uma entrada por BSSID unico visto, ~80 bytes
+                cada) cresceria sem limite pela sessao inteira numa coleta
+                longa pela cidade. Quando o heap livre do ESP32 cai abaixo
+                deste piso, a tabela em RAM e zerada automaticamente (ver
+                app_main) — isso NAO apaga nenhum dado ja gravado no storage,
+                so reseta a deduplicacao em memoria (BSSIDs ja gravados podem
+                gerar uma linha duplicada apos o reset; inofensivo, o app do
+                celular ja deduplica por BSSID ao persistir). 40KB deixa
+                margem segura abaixo do heap livre tipico com Wi-Fi+BT ativos
+                (~60-80KB medido em campo, ver BACKLOG.md item 7) — sem esse
+                piso o contador de redes travava em ~512 (item 8), ponto em
+                que a tabela nao conseguia mais crescer.
+
+                Abaixo do piso, a tabela e podada por idade (ver
+                WARDRIVER_DEDUP_STALE_SECONDS) e so zerada por completo se a
+                poda nao liberar heap suficiente.
+
+        config WARDRIVER_DEDUP_STALE_SECONDS
+            int "Sem sinal ha quantos segundos uma rede pode ser removida da tabela em RAM"
+            default 120
+            range 10 3600
+            help
+                Usado quando o heap cai abaixo de
+                WARDRIVER_DEDUP_RESET_HEAP_FLOOR_BYTES: as redes da tabela de
+                deduplicacao que nao foram ouvidas nesse intervalo (AP que ja
+                saiu do alcance) sao removidas; as que ainda estao sendo
+                ouvidas ficam, com o SSID ja descoberto. Se a poda nao liberar
+                heap, tenta de novo com 1/4 desse tempo, e por ultimo zera a
+                tabela inteira. Ver BACKLOG.md item 12.
+    endmenu
+
+    config WARDRIVER_STATUS_UPDATE_INTERVAL_MS
+        int "Intervalo de atualizacao do status (OLED + log + flush do storage), em ms"
+        default 2000
+
+    menu "Sincronizacao Bluetooth (SPP, Classic)"
+        config WARDRIVER_BT_ENABLED
+            bool "Sincronizacao via Bluetooth Classic (SPP) habilitada"
+            default y
+            help
+                Sobe um servidor SPP descobrivel. Ao conectar (app Wardriver
+                Sync no Android), o dispositivo transmite as sessoes .wdr
+                gravadas (registros binarios, ver wardriver_record.h).
+                Requer CONFIG_BT_ENABLED=y (ver sdkconfig.defaults) — so
+                funciona em Android, iOS nao expõe SPP para apps de
+                terceiros sem certificacao MFi.
+
+        config WARDRIVER_BT_DEVICE_NAME
+            string "Nome do dispositivo Bluetooth"
+            default "WARDRIVER"
+            depends on WARDRIVER_BT_ENABLED
+
+        config WARDRIVER_PHONE_GPS_STALE_MS
+            int "Janela de validade do fix de GPS recebido do celular, em ms"
+            default 10000
+            depends on WARDRIVER_BT_ENABLED
+            help
+                O celular conectado manda a propria localizacao (linha "LOC
+                <lat> <lon> <precisao>") periodicamente enquanto sincroniza —
+                ver phone_gps.c. Esse fix tem prioridade sobre o modulo GPS
+                fisico (GY-GPS6MV2) enquanto a ultima atualizacao recebida
+                tiver menos que esse tempo. Sem atualizacao dentro da janela
+                (celular desconectou, app fechado, permissao de localizacao
+                negada), o firmware volta a usar o modulo GPS fisico
+                normalmente — nunca fica sem coordenada so por depender do
+                celular.
+    endmenu
+
+endmenu

@@ -1,0 +1,58 @@
+name: wardriver-web
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    environment:
+      MYSQL_DATABASE: wardriver
+      MYSQL_USER: wardriver
+      MYSQL_PASSWORD: ${WARDRIVER_DB_PASSWORD:?defina WARDRIVER_DB_PASSWORD no .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WARDRIVER_DB_HOST: db
+      WARDRIVER_DB_USER: wardriver
+      WARDRIVER_DB_PASSWORD: ${WARDRIVER_DB_PASSWORD}
+      WARDRIVER_DB_NAME: wardriver
+      WARDRIVER_WEB_PANEL_PASSWORD_HASH: ${WARDRIVER_WEB_PANEL_PASSWORD_HASH:?defina WARDRIVER_WEB_PANEL_PASSWORD_HASH no .env}
+      WARDRIVER_WEB_UPLOAD_TOKEN_SHA256: ${WARDRIVER_WEB_UPLOAD_TOKEN_SHA256:-}
+      WARDRIVER_WEB_TRUST_PROXY: ${WARDRIVER_WEB_TRUST_PROXY:-0}
+      WARDRIVER_WEB_INSECURE_COOKIE: ${WARDRIVER_WEB_INSECURE_COOKIE:-0}
+      WARDRIVER_WEB_SESSION_HOURS: ${WARDRIVER_WEB_SESSION_HOURS:-12}
+      WARDRIVER_WEB_RATE_PER_MINUTE: ${WARDRIVER_WEB_RATE_PER_MINUTE:-240}
+    ports:
+      - "127.0.0.1:${PORT:-8080}:8080"
+
+  caddy:
+    profiles: ["https"]
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-}
+    volumes:
+      - ./deploy/Caddyfile.compose:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+
+volumes:
+  db-data:
+  caddy-data:

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configuracao da nuvem (endereco, token cifrado, marca d'agua) nao entra em backup nem em transferencia de aparelho:
+     o token cifrado so abre com a chave do Keystore deste aparelho. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="cloud.xml" />
+</full-backup-content>
