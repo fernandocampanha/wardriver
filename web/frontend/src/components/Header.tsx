@@ -6,6 +6,7 @@ const LINKS: { path: Path; label: string; data: boolean }[] = [
   { path: '/', label: 'Painel', data: true },
   { path: '/redes', label: 'Redes', data: true },
   { path: '/analise', label: 'Análise', data: true },
+  { path: '/sincronizacoes', label: 'Sincronizações', data: true },
   { path: '/sobre', label: 'Sobre', data: false },
 ];
 

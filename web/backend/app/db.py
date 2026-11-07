@@ -275,6 +275,12 @@ class Store:
             rows = c.execute(select(imports).order_by(imports.c.id.desc()).limit(limit))
             return [dict(r._mapping) for r in rows]
 
+    def sync_history(self, limit: int, offset: int) -> Tuple[int, List[Dict]]:
+        with self.engine.connect() as c:
+            total = c.execute(select(func.count()).select_from(imports)).scalar_one()
+            rows = c.execute(select(imports).order_by(imports.c.id.desc()).limit(limit).offset(offset))
+            return total, [dict(r._mapping) for r in rows]
+
     def create_term_session(self, token: str, term_version: str, ttl_s: int) -> None:
         now = _now_ms()
         with self.engine.begin() as c:

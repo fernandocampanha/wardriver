@@ -9,6 +9,7 @@ import About from './pages/About';
 import Analysis from './pages/Analysis';
 import Dashboard from './pages/Dashboard';
 import Networks from './pages/Networks';
+import SyncHistory from './pages/SyncHistory';
 import Term from './pages/Term';
 import { parseHash, useRoute, VIEW_KEYS, navigate, type Path } from './router';
 import type { Facets } from './types';
@@ -46,7 +47,7 @@ export default function App() {
   }, [route.path]);
 
   useEffect(() => {
-    const names: Record<Path, string> = { '/': 'Painel', '/redes': 'Redes', '/analise': 'Análise', '/sobre': 'Sobre o projeto', '/termo': 'Termo de compromisso' };
+    const names: Record<Path, string> = { '/': 'Painel', '/redes': 'Redes', '/analise': 'Análise', '/sincronizacoes': 'Sincronizações', '/sobre': 'Sobre o projeto', '/termo': 'Termo de compromisso' };
     document.title = `${names[route.path]} · Wardriver Web`;
   }, [route.path]);
 
@@ -86,6 +87,7 @@ export default function App() {
         {page === '/' && <Dashboard route={route} filters={filters} setFilters={setFilters} facets={facets} onTermLost={termLost} />}
         {page === '/redes' && <Networks route={route} filters={filters} setFilters={setFilters} facets={facets} onTermLost={termLost} />}
         {page === '/analise' && <Analysis filters={filters} setFilters={setFilters} facets={facets} onTermLost={termLost} />}
+        {page === '/sincronizacoes' && <SyncHistory route={route} onTermLost={termLost} />}
       </main>
       {page !== '/' && <Footer />}
       <Tooltip />

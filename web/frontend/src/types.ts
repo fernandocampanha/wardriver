@@ -53,9 +53,21 @@ export interface ImportRow {
   id: number;
   at_ms: number;
   source: string;
+  layout: string;
+  rows_read: number;
+  rows_skipped: number;
+  networks: number;
   added: number;
   updated: number;
   names_filled: number;
+  with_position: number;
+}
+
+export interface SyncHistory {
+  total: number;
+  limit: number;
+  offset: number;
+  events: ImportRow[];
 }
 
 export interface Stats {

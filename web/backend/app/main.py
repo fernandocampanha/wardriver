@@ -214,6 +214,11 @@ def create_app(settings: Optional[Settings] = None, store: Optional[Store] = Non
         return JSONResponse({"cities": store.facet(networks.c.city, [], 300), "vendors": store.facet(networks.c.vendor, [], 300),
                              "term_version": TERM_VERSION}, headers={"Cache-Control": "private, max-age=60"})
 
+    @app.get("/api/sync-history", dependencies=gate)
+    def sync_history(request: Request, limit: int = Query(50, ge=1, le=PAGE_MAX), offset: int = Query(0, ge=0, le=10_000_000)):
+        total, rows = ctx_of(request).store.sync_history(limit, offset)
+        return JSONResponse({"total": total, "limit": limit, "offset": offset, "events": rows}, headers=NOSTORE)
+
 
     @app.get("/api/v1/ping", dependencies=[Depends(require_bearer)])
     def ping():

@@ -35,7 +35,7 @@ def test_health_and_me_public_without_data(client):
     assert client.get("/api/me").json() == {"accepted": False, "term_version": VERSION}
 
 
-@pytest.mark.parametrize("path", ["/api/networks", "/api/map", "/api/stats", "/api/facets"])
+@pytest.mark.parametrize("path", ["/api/networks", "/api/map", "/api/stats", "/api/facets", "/api/sync-history"])
 def test_data_requires_term(client, path):
     seed(client)
     assert client.get(path).status_code == 403
@@ -222,6 +222,25 @@ def test_ping_needs_token(client):
 
 def test_ingest_requires_bearer_term_cookie_is_not_enough(accepted):
     assert ingest(accepted, [net()], headers=CSRF).status_code == 401
+
+
+def test_sync_history_lists_ingest_events_newest_first(accepted):
+    ingest(accepted, [net()])
+    ingest(accepted, [net(bssid="70:AA:BB:10:00:02"), net(bssid="70:AA:BB:10:00:03")])
+    data = accepted.get("/api/sync-history").json()
+    assert data["total"] == 2
+    first, second = data["events"]
+    assert (first["source"], first["networks"], first["added"]) == ("app", 2, 2)
+    assert (second["source"], second["networks"], second["added"]) == ("app", 1, 1)
+    assert first["at_ms"] >= second["at_ms"]
+    page = accepted.get("/api/sync-history?limit=1&offset=1").json()
+    assert page["total"] == 2 and len(page["events"]) == 1 and page["events"][0] is not None
+    assert page["events"][0]["added"] == second["added"]
+
+
+def test_sync_history_empty_when_no_ingest_happened(accepted):
+    data = accepted.get("/api/sync-history").json()
+    assert data == {"total": 0, "limit": 50, "offset": 0, "events": []}
 
 
 def test_ingest_stores_derived_fields_and_is_idempotent(accepted):

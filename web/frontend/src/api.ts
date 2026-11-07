@@ -1,5 +1,5 @@
 import { toApiParams, type Filters } from './filters';
-import type { Facets, MapResponse, Page, Stats } from './types';
+import type { Facets, MapResponse, Page, Stats, SyncHistory } from './types';
 
 const CSRF = { 'X-Requested-With': 'wardriver-web' };
 
@@ -75,4 +75,8 @@ export async function getStats(f: Filters, signal?: AbortSignal): Promise<Stats>
 
 export async function getFacets(): Promise<Facets> {
   return (await call('/api/facets')).json();
+}
+
+export async function getSyncHistory(offset: number, limit: number, signal?: AbortSignal): Promise<SyncHistory> {
+  return (await call(`/api/sync-history?offset=${offset}&limit=${limit}`, { signal })).json();
 }

@@ -1,8 +1,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-export type Path = '/' | '/redes' | '/analise' | '/sobre' | '/termo';
-const PATHS: Path[] = ['/', '/redes', '/analise', '/sobre', '/termo'];
+export type Path = '/' | '/redes' | '/analise' | '/sincronizacoes' | '/sobre' | '/termo';
+const PATHS: Path[] = ['/', '/redes', '/analise', '/sincronizacoes', '/sobre', '/termo'];
 
 export const VIEW_KEYS = ['v', 'sel', 'sort', 'p', 'mode', 'next'];
 
