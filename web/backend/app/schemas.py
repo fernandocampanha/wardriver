@@ -1,5 +1,3 @@
-
-
 import re
 from typing import List, Literal, Optional
 
@@ -10,7 +8,6 @@ from .merge import Network
 BSSID_RE = re.compile(r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 NUL = chr(0)
 MAX_BATCH = 5000
-
 
 class IngestNetwork(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -57,7 +54,6 @@ class IngestNetwork(BaseModel):
         return Network(bssid=self.bssid, ssid=name, ssid_hidden=not name, channel=self.channel, rssi=self.rssi,
                        encryption=self.enc, times_seen=self.seen, wps_active=self.wps, lat=self.lat, lon=self.lon,
                        last_session_id=self.session or "app", last_seen_at_ms=self.last)
-
 
 class IngestRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")

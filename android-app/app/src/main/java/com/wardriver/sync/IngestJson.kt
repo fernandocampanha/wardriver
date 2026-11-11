@@ -1,10 +1,5 @@
 package com.wardriver.sync
 
-
-
-
-
-
 object IngestJson {
 
     private val ENCRYPTIONS = setOf("OPEN", "WEP", "WPA", "WPA2", "WPA3", "UNKNOWN")
@@ -42,7 +37,6 @@ object IngestJson {
         sb.append(",\"last\":").append(r.lastSeenAtMs.coerceAtLeast(0L))
         sb.append('}')
     }
-
 
     internal fun quote(s: String, sb: StringBuilder) {
         sb.append('"')

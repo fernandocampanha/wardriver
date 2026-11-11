@@ -5,32 +5,16 @@ import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-
 data class NameChange(val bssid: String, val ssid: String, val previousSsid: String?) {
 
     val wasHidden: Boolean get() = previousSsid == null
 }
-
 
 data class ApplyResult(val nameChanges: List<NameChange>, val added: Int, val updated: Int) {
     val namesRevealed: Int get() = nameChanges.count { it.wasHidden }
 
     companion object { val EMPTY = ApplyResult(emptyList(), 0, 0) }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class NetworkStore(private val dao: NetworkDao) {
 
@@ -41,9 +25,7 @@ class NetworkStore(private val dao: NetworkDao) {
     val values: Collection<NetworkRecord> get() = map.values
     val size: Int get() = map.size
 
-
     val namesRevealed: Int get() = revealed.get()
-
 
     suspend fun load() {
         mutex.withLock {
@@ -51,9 +33,7 @@ class NetworkStore(private val dao: NetworkDao) {
         }
     }
 
-
     suspend fun applyCaptures(records: Collection<NetworkRecord>): ApplyResult = apply(records, live = true)
-
 
     suspend fun applyImport(records: Collection<NetworkRecord>): ApplyResult = apply(records, live = false)
 
@@ -85,7 +65,6 @@ class NetworkStore(private val dao: NetworkDao) {
                 }
                 pending[incoming.bssid] = merged
             }
-
 
             for (chunk in pending.values.chunked(500)) dao.upsertAll(chunk)
             map.putAll(pending)

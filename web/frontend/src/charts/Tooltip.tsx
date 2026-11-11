@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 
-
 export default function Tooltip() {
   const ref = useRef<HTMLDivElement>(null);
 

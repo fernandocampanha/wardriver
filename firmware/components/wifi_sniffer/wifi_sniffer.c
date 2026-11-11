@@ -1,32 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #include "wifi_sniffer.h"
 
 #include <string.h>
@@ -43,21 +14,12 @@
 
 static const char *TAG = "wifi_sniffer";
 
-
-
-
-
-
-
-
-
 #define WIFI_SNIFFER_INITIAL_CAPACITY 64
 #define WIFI_SNIFFER_QUEUE_LEN      16
 #define WIFI_SNIFFER_MAX_FRAME_LEN  512
 
 static const uint8_t OUI_MICROSOFT[3] = {0x00, 0x50, 0xF2};
 static const uint8_t OUI_RSN[3]       = {0x00, 0x0F, 0xAC};
-
 
 #define WPS_ATTR_STATE            0x1044
 #define WPS_ATTR_AP_SETUP_LOCKED  0x1057
@@ -66,7 +28,6 @@ static const uint8_t OUI_RSN[3]       = {0x00, 0x0F, 0xAC};
 #define WPS_ATTR_MANUFACTURER     0x1021
 #define WPS_ATTR_MODEL_NAME       0x1023
 #define WPS_ATTR_MODEL_NUMBER     0x1024
-
 
 #define SNIFFER_FRAME_BEACON_LIKE 0
 #define SNIFFER_FRAME_ASSOC       1
@@ -79,7 +40,6 @@ typedef struct {
     uint8_t kind;
     uint8_t payload[WIFI_SNIFFER_MAX_FRAME_LEN];
 } sniffer_raw_frame_t;
-
 
 #ifndef CONFIG_WARDRIVER_HOP_FIRST_CHANNEL
 #define CONFIG_WARDRIVER_HOP_FIRST_CHANNEL 1
@@ -99,31 +59,14 @@ static int s_network_count = 0;
 static int s_network_capacity = 0;
 static SemaphoreHandle_t s_table_mutex = NULL;
 
-
-
-
-
-
-
-
-
-
-
 #define SEEN_BLOOM_BITS  32768u
 #define SEEN_BLOOM_BYTES (SEEN_BLOOM_BITS / 8u)
 static uint8_t *s_seen_bloom = NULL;
 static uint32_t s_seen_count = 0;
 
-
-
 static wifi_sniffer_stats_t s_stats;
 
-
-
 static volatile uint32_t s_rx_by_channel[WIFI_SNIFFER_MAX_CHANNEL + 1];
-
-
-
 
 #define NAME_HINT_SLOTS   16
 #define NAME_HINT_TTL_US  (30LL * 1000000)
@@ -141,10 +84,6 @@ static int s_hint_next = 0;
 static QueueHandle_t s_frame_queue = NULL;
 static wifi_sniffer_network_cb_t s_user_cb = NULL;
 static void *s_user_ctx = NULL;
-
-
-
-
 
 static void parse_wps_ie(const uint8_t *data, uint16_t len, wifi_sniffer_wps_info_t *wps)
 {
@@ -171,9 +110,6 @@ static void parse_wps_ie(const uint8_t *data, uint16_t len, wifi_sniffer_wps_inf
                 if (attr_len >= 2) wps->config_methods = (val[0] << 8) | val[1];
                 break;
 
-
-
-
             default:
                 break;
         }
@@ -181,13 +117,8 @@ static void parse_wps_ie(const uint8_t *data, uint16_t len, wifi_sniffer_wps_inf
     }
 }
 
-
-
-
-
 static wifi_sniffer_encryption_t classify_rsn(const uint8_t *ie, uint8_t len)
 {
-
 
     if (len < 8) return WIFI_SNIFFER_ENC_WPA2;
 
@@ -211,15 +142,6 @@ static wifi_sniffer_encryption_t classify_rsn(const uint8_t *ie, uint8_t len)
     }
     return WIFI_SNIFFER_ENC_WPA2;
 }
-
-
-
-
-
-
-
-
-
 
 static bool seen_mark_locked(const uint8_t *bssid)
 {
@@ -245,11 +167,6 @@ static bool seen_mark_locked(const uint8_t *bssid)
     return was_new;
 }
 
-
-
-
-
-
 static bool ssid_ie_is_blank(const uint8_t *val, uint8_t len)
 {
     for (uint8_t i = 0; i < len; i++) {
@@ -257,7 +174,6 @@ static bool ssid_ie_is_blank(const uint8_t *val, uint8_t len)
     }
     return true;
 }
-
 
 static void hint_store_locked(const uint8_t *bssid, const char *ssid, uint8_t ssid_len, int64_t now)
 {
@@ -275,8 +191,6 @@ static void hint_store_locked(const uint8_t *bssid, const char *ssid, uint8_t ss
     s_hints[idx].ssid_len = ssid_len;
     s_hints[idx].at_us = now;
 }
-
-
 
 static bool hint_take_locked(const uint8_t *bssid, int64_t now, char *ssid_out, uint8_t *len_out)
 {
@@ -316,8 +230,6 @@ static void upsert_network(wifi_sniffer_network_t *incoming, bool from_probe_res
             wifi_sniffer_network_t *grown = realloc(s_networks, new_capacity * sizeof(wifi_sniffer_network_t));
             if (grown == NULL) {
 
-
-
                 s_stats.alloc_failures++;
                 seen_mark_locked(incoming->bssid);
                 ESP_LOGE(TAG, "sem memoria para crescer tabela de redes (%d entradas, heap livre %u)",
@@ -354,11 +266,6 @@ static void upsert_network(wifi_sniffer_network_t *incoming, bool from_probe_res
         slot->channel = incoming->channel;
         slot->encryption = incoming->encryption;
 
-
-
-
-
-
         bool incoming_named = incoming->ssid_len > 0 && !incoming->ssid_hidden;
         if (incoming_named) {
             slot->ssid_len = incoming->ssid_len;
@@ -373,19 +280,12 @@ static void upsert_network(wifi_sniffer_network_t *incoming, bool from_probe_res
         slot->times_seen++;
         slot->last_seen_us = now;
 
-
-
-
-
         ssid_just_revealed = was_unnamed && incoming_named;
         if (ssid_just_revealed) {
             if (from_probe_resp) s_stats.names_revealed_probe++;
             else                 s_stats.names_revealed_beacon++;
         }
     }
-
-
-
 
     if (!seen_mark_locked(incoming->bssid) && s_seen_bloom == NULL && is_new) {
         s_seen_count++;
@@ -401,13 +301,6 @@ static void upsert_network(wifi_sniffer_network_t *incoming, bool from_probe_res
     }
 }
 
-
-
-
-
-
-
-
 static void parse_beacon_frame(const uint8_t *payload, uint16_t len, int8_t rssi, uint8_t channel)
 {
 
@@ -420,9 +313,6 @@ static void parse_beacon_frame(const uint8_t *payload, uint16_t len, int8_t rssi
     memcpy(net.bssid, &payload[10], 6);
     net.rssi = rssi;
     net.channel = channel;
-
-
-
 
     net.ssid_hidden = true;
 
@@ -489,11 +379,6 @@ static void parse_beacon_frame(const uint8_t *payload, uint16_t len, int8_t rssi
     upsert_network(&net, is_probe_resp);
 }
 
-
-
-
-
-
 static bool ssid_from_ies(const uint8_t *ies, uint16_t len, char *out, uint8_t *out_len)
 {
     uint16_t offset = 0;
@@ -513,11 +398,6 @@ static bool ssid_from_ies(const uint8_t *ies, uint16_t len, char *out, uint8_t *
     }
     return false;
 }
-
-
-
-
-
 
 static void apply_name_hint(const uint8_t *bssid, const char *ssid, uint8_t ssid_len)
 {
@@ -553,10 +433,6 @@ static void apply_name_hint(const uint8_t *bssid, const char *ssid, uint8_t ssid
     }
 }
 
-
-
-
-
 static void handle_assoc_request(const sniffer_raw_frame_t *f)
 {
     const uint16_t ie_off = (f->kind == SNIFFER_FRAME_REASSOC) ? 34 : 28;
@@ -574,7 +450,6 @@ static void handle_assoc_request(const sniffer_raw_frame_t *f)
     apply_name_hint(bssid, ssid, ssid_len);
 }
 
-
 static void sniffer_process_frame(const sniffer_raw_frame_t *f)
 {
     if (f->kind == SNIFFER_FRAME_BEACON_LIKE) {
@@ -583,10 +458,6 @@ static void sniffer_process_frame(const sniffer_raw_frame_t *f)
         handle_assoc_request(f);
     }
 }
-
-
-
-
 
 static void sniffer_worker_task(void *arg)
 {
@@ -612,9 +483,6 @@ static void wifi_sniffer_promisc_cb(void *buf, wifi_promiscuous_pkt_type_t type)
     const uint8_t *payload = pkt->payload;
     uint16_t len = pkt->rx_ctrl.sig_len;
 
-
-
-
     uint8_t kind;
     uint16_t min_len;
     switch (payload[0] & 0xFC) {
@@ -638,24 +506,15 @@ static void wifi_sniffer_promisc_cb(void *buf, wifi_promiscuous_pkt_type_t type)
 
     if (kind != SNIFFER_FRAME_BEACON_LIKE) {
 
-
-
         memset(&frame.payload[10], 0, 6);
         if (kind == SNIFFER_FRAME_REASSOC && frame.len >= 34) memset(&frame.payload[28], 0, 6);
     }
 
-
-
     xQueueSend(s_frame_queue, &frame, 0);
 }
 
-
-
-
-
 static volatile bool s_hop_running = false;
 static TaskHandle_t s_hop_task = NULL;
-
 
 static uint32_t hop_dwell_ms(uint8_t channel)
 {
@@ -670,7 +529,6 @@ static uint8_t hop_next_channel(uint8_t channel)
     }
     return channel + 1;
 }
-
 
 __attribute__((unused)) static uint32_t wifi_sniffer_hop_sweep_ms(void)
 {
@@ -698,10 +556,6 @@ __attribute__((unused)) static void wifi_sniffer_hop_task(void *arg)
     vTaskDelete(NULL);
 }
 
-
-
-
-
 esp_err_t wifi_sniffer_init(void)
 {
     s_network_capacity = WIFI_SNIFFER_INITIAL_CAPACITY;
@@ -710,8 +564,6 @@ esp_err_t wifi_sniffer_init(void)
 
     s_table_mutex = xSemaphoreCreateMutex();
     if (s_table_mutex == NULL) return ESP_ERR_NO_MEM;
-
-
 
     s_seen_bloom = calloc(1, SEEN_BLOOM_BYTES);
     if (s_seen_bloom == NULL) {
@@ -731,8 +583,6 @@ esp_err_t wifi_sniffer_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
     ESP_ERROR_CHECK(esp_wifi_start());
-
-
 
     wifi_country_t country = {
         .cc = "BR", .schan = 1, .nchan = 13, .max_tx_power = 20, .policy = WIFI_COUNTRY_POLICY_MANUAL,
@@ -821,10 +671,6 @@ bool wifi_sniffer_note_known(const uint8_t bssid[6])
     xSemaphoreGive(s_table_mutex);
     return was_new;
 }
-
-
-
-
 
 static void shrink_table_locked(void)
 {

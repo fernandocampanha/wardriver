@@ -1,42 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #include "oled_display.h"
 #include "font5x7.h"
 
@@ -61,16 +22,11 @@ static const char *TAG = "oled_display";
 
 #define OLED_I2C_PORT I2C_NUM_0
 
-
-
 #define OLED_MAX_CONSECUTIVE_FAILURES 3
 
 #define OLED_BOOT_INIT_ATTEMPTS 3
 
 #define OLED_INIT_RETRY_US (5LL * 1000000)
-
-
-
 
 #define OLED_GUARD_PERIOD_MS 1000
 
@@ -87,9 +43,6 @@ static int64_t s_last_full_us = 0;
 static int64_t s_next_init_try_us = 0;
 
 static oled_stats_t s_stats;
-
-
-
 
 static const uint8_t s_cfg_cmds[] = {
     0xD5, 0x80,
@@ -119,10 +72,6 @@ static void oled_unlock(void)
     if (s_lock != NULL) xSemaphoreGiveRecursive(s_lock);
 }
 
-
-
-
-
 static esp_err_t oled_write_cmd(uint8_t cmd)
 {
     uint8_t buf[2] = {0x00, cmd};
@@ -130,20 +79,12 @@ static esp_err_t oled_write_cmd(uint8_t cmd)
                                        buf, sizeof(buf), pdMS_TO_TICKS(100));
 }
 
-
-
-
-
 static esp_err_t oled_write_nops(void)
 {
     static const uint8_t buf[4] = {0x00, 0xE3, 0xE3, 0xE3};
     return i2c_master_write_to_device(OLED_I2C_PORT, CONFIG_WARDRIVER_OLED_I2C_ADDR,
                                        buf, sizeof(buf), pdMS_TO_TICKS(100));
 }
-
-
-
-
 
 static esp_err_t oled_apply_cfg(bool cold)
 {
@@ -163,8 +104,6 @@ static esp_err_t oled_apply_cfg(bool cold)
     }
     return ESP_OK;
 }
-
-
 
 static esp_err_t oled_set_full_window(void)
 {
@@ -191,10 +130,6 @@ static esp_err_t oled_write_pages(void)
     }
     return ESP_OK;
 }
-
-
-
-
 
 static const font5x7_glyph_t *font5x7_find(char c)
 {
@@ -230,11 +165,6 @@ void oled_display_draw_string(uint8_t x, uint8_t page, const char *str)
     oled_unlock();
 }
 
-
-
-
-
-
 static void oled_apply_heartbeat(void)
 {
 #ifdef CONFIG_WARDRIVER_OLED_HEARTBEAT
@@ -245,22 +175,11 @@ static void oled_apply_heartbeat(void)
 #endif
 }
 
-
-
-
-
 typedef struct {
     bool sda_low_before;
     bool scl_low_before;
     bool scl_low_after;
 } bus_diag_t;
-
-
-
-
-
-
-
 
 static bus_diag_t oled_i2c_bus_recover_pins(void)
 {
@@ -288,7 +207,6 @@ static bus_diag_t oled_i2c_bus_recover_pins(void)
         esp_rom_delay_us(5);
     }
 
-
     gpio_set_level(CONFIG_WARDRIVER_OLED_SDA_GPIO, 0);
     esp_rom_delay_us(5);
     gpio_set_level(CONFIG_WARDRIVER_OLED_SCL_GPIO, 1);
@@ -307,8 +225,6 @@ static void oled_drop_driver(void)
     }
 }
 
-
-
 static esp_err_t oled_send_frame(void)
 {
     esp_err_t ret = oled_set_full_window();
@@ -316,18 +232,11 @@ static esp_err_t oled_send_frame(void)
     return ret;
 }
 
-
-
-
-
 static esp_err_t oled_bringup_locked(int attempts)
 {
     esp_err_t ret = ESP_FAIL;
     for (int attempt = 0; attempt < attempts; attempt++) {
         if (!s_driver_installed) {
-
-
-
 
             (void)oled_i2c_bus_recover_pins();
             i2c_config_t conf = {
@@ -368,8 +277,6 @@ static esp_err_t oled_bringup_locked(int attempts)
     return ret;
 }
 
-
-
 static esp_err_t oled_recover_locked(void)
 {
     s_stats.bus_recoveries++;
@@ -387,21 +294,11 @@ static esp_err_t oled_recover_locked(void)
         ESP_LOGI(TAG, "OLED recuperado");
     } else {
 
-
         s_next_init_try_us = esp_timer_get_time() + OLED_INIT_RETRY_US;
         ESP_LOGE(TAG, "OLED nao voltou (%s); nova tentativa em %d s", esp_err_to_name(ret), (int)(OLED_INIT_RETRY_US / 1000000));
     }
     return ret;
 }
-
-
-
-
-
-
-
-
-
 
 static esp_err_t oled_push_locked(bool cold)
 {
@@ -430,7 +327,6 @@ static esp_err_t oled_push_locked(bool cold)
     return ret;
 }
 
-
 static esp_err_t oled_try_bringup_locked(void)
 {
     int64_t now = esp_timer_get_time();
@@ -441,10 +337,6 @@ static esp_err_t oled_try_bringup_locked(void)
     else ESP_LOGI(TAG, "OLED inicializado numa nova tentativa (depois do boot)");
     return ret;
 }
-
-
-
-
 
 esp_err_t oled_display_init(void)
 {
@@ -471,7 +363,6 @@ esp_err_t oled_display_update(void)
     esp_err_t ret;
     if (!s_initialized) {
 
-
         ret = (s_guard_task == NULL) ? oled_try_bringup_locked() : ESP_ERR_INVALID_STATE;
     } else {
         ret = oled_push_locked(false);
@@ -484,7 +375,6 @@ esp_err_t oled_display_show_status(uint32_t networks, uint8_t satellites,
                                     oled_gps_source_t gps_source, bool storage_ok, int storage_percent)
 {
     char line[48];
-
 
     oled_lock();
     oled_display_clear();
@@ -531,11 +421,6 @@ void oled_display_get_stats(oled_stats_t *out)
     out->last_ok_age_ms = s_last_ok_us > 0 ? (int64_t)((esp_timer_get_time() - s_last_ok_us) / 1000) : -1;
     oled_unlock();
 }
-
-
-
-
-
 
 static void oled_guard_tick(void)
 {

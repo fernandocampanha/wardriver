@@ -1,6 +1,5 @@
 export type Encryption = 'OPEN' | 'WEP' | 'WPA' | 'WPA2' | 'WPA3' | 'UNKNOWN';
 
-
 export interface Network {
   bssid: string;
   ssid: string;
@@ -34,7 +33,6 @@ export interface Page {
   offset: number;
   networks: Network[];
 }
-
 
 export type Bounds = [number, number, number, number];
 

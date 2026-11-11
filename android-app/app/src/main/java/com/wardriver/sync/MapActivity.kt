@@ -41,39 +41,9 @@ import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlayOptions
 import org.osmdroid.views.overlay.simplefastpoint.SimplePointTheme
 import java.io.File
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class MapActivity : AppCompatActivity() {
 
-
     private class Positioned(val net: NetworkRecord, val point: GeoPoint)
-
 
     private class NetworkInfoWindow(mapView: MapView) :
         InfoWindow(R.layout.map_info_window, mapView) {
@@ -95,11 +65,7 @@ class MapActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var infoWindow: NetworkInfoWindow
 
-
-
     private var pointsOverlay: SimpleFastPointOverlay? = null
-
-
 
     private var openBssid: String? = null
 
@@ -108,8 +74,6 @@ class MapActivity : AppCompatActivity() {
     private var withoutCoordinates: List<NetworkRecord> = emptyList()
 
     private var myLocation: MyLocationNewOverlay? = null
-
-
 
     private var centeredOnUser = false
 
@@ -168,8 +132,6 @@ class MapActivity : AppCompatActivity() {
             }
         }
 
-
-
         if (hasLocationPermission()) {
             startMyLocation()
         } else {
@@ -180,14 +142,9 @@ class MapActivity : AppCompatActivity() {
         observeDatabaseChanges()
     }
 
-
-
-
-
     private fun hasLocationPermission(): Boolean =
         ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
-
 
     private fun startMyLocation() {
         if (myLocation != null || !hasLocationPermission()) return
@@ -199,16 +156,12 @@ class MapActivity : AppCompatActivity() {
         binding.mapView.overlays.add(overlay)
         myLocation = overlay
 
-
-
         val known = lastKnownLocation()
         if (known != null) {
             centerOn(GeoPoint(known), USER_ZOOM)
         } else {
             Toast.makeText(this, R.string.map_waiting_fix, Toast.LENGTH_SHORT).show()
         }
-
-
 
         overlay.runOnFirstFix {
             runOnUiThread {
@@ -237,7 +190,6 @@ class MapActivity : AppCompatActivity() {
         binding.mapView.controller.setCenter(point)
     }
 
-
     private fun recenterOnUser() {
         if (!hasLocationPermission()) {
             locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -258,28 +210,18 @@ class MapActivity : AppCompatActivity() {
         binding.mapView.controller.animateTo(here)
     }
 
-
-
-
-
     private fun loadNetworks() {
         lifecycleScope.launch {
             val all = withContext(Dispatchers.IO) { db.networkDao().getAll() }
             reload(all)
             applyFilter(focus = FocusMode.NONE)
 
-
-
             if (!centeredOnUser) {
-
 
                 fitAll(stopFollowing = false)
             }
         }
     }
-
-
-
 
     private fun observeDatabaseChanges() {
         lifecycleScope.launch {
@@ -294,9 +236,6 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-
-
-
     private fun reload(all: List<NetworkRecord>) {
         val positioned = ArrayList<Positioned>(all.size)
         val noCoordinates = ArrayList<NetworkRecord>()
@@ -308,7 +247,6 @@ class MapActivity : AppCompatActivity() {
         allWithPosition = positioned
         withoutCoordinates = noCoordinates
     }
-
 
     private fun applyFilter(focus: FocusMode) {
         val q = query
@@ -350,10 +288,6 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-
-
-
-
     private fun rebuildOverlay() {
         pointsOverlay?.let { binding.mapView.overlays.remove(it) }
         val points: List<IGeoPoint> = matched.map { it.point }
@@ -381,7 +315,6 @@ class MapActivity : AppCompatActivity() {
         this.color = color
     }
 
-
     private fun openInfo(entry: Positioned) {
         if (infoWindow.isOpen && openBssid == entry.net.bssid) {
             infoWindow.close()
@@ -392,8 +325,6 @@ class MapActivity : AppCompatActivity() {
         infoWindow.open(entry.net, entry.point, 0, 0)
         openBssid = entry.net.bssid
     }
-
-
 
     private fun fitAll(stopFollowing: Boolean = true) {
         if (stopFollowing) myLocation?.disableFollowLocation()

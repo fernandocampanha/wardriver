@@ -13,7 +13,6 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 
-
 static int64_t g_now_us = 1000LL * 1000000;
 int64_t esp_timer_get_time(void) { return g_now_us; }
 void esp_rom_delay_us(uint32_t us) { g_now_us += us; }
@@ -24,7 +23,6 @@ SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void) { return (void *)1; }
 int xSemaphoreTakeRecursive(SemaphoreHandle_t m, uint32_t t) { (void)m; (void)t; g_lock_depth++; return 1; }
 int xSemaphoreGiveRecursive(SemaphoreHandle_t m) { (void)m; g_lock_depth--; return 1; }
 
-
 static char g_log[64][200]; static int g_log_n = 0; static bool g_log_print = false;
 void harness_log(char lvl, const char *fmt, ...) {
     char buf[200]; va_list ap; va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);
@@ -32,7 +30,6 @@ void harness_log(char lvl, const char *fmt, ...) {
     if (g_log_print) printf("      [%c] %s\n", lvl, buf);
 }
 static bool log_has(const char *needle) { for (int i = 0; i < g_log_n; i++) if (strstr(g_log[i], needle)) return true; return false; }
-
 
 typedef struct {
     bool display_on, pump_on; int addr_mode;
@@ -120,7 +117,6 @@ int gpio_get_level(int pin) {
     if (pin == 22 && ssd.scl_stuck_low) return 0;
     return g_pin_level[pin];
 }
-
 
 #include "oled_display.c"
 

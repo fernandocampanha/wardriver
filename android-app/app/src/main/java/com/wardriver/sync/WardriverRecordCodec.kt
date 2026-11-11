@@ -3,15 +3,8 @@ package com.wardriver.sync
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-
-
-
-
-
-
 object WardriverRecordCodec {
     const val SIZE = 71
-
 
     const val LIVE_RECORD_MARKER: Byte = 0x01
 
@@ -22,9 +15,6 @@ object WardriverRecordCodec {
     private const val FLAG_SSID_HIDDEN = 1 shl 0
     private const val FLAG_HAS_FIX = 1 shl 1
     private const val FLAG_WPS_PRESENT = 1 shl 2
-
-
-
 
     fun decode(bytes: ByteArray, sessionId: String): NetworkRecord {
         require(bytes.size == SIZE) { "registro binario com tamanho invalido: ${bytes.size} (esperado $SIZE)" }
@@ -47,13 +37,6 @@ object WardriverRecordCodec {
         val channel = buf.get().toInt() and 0xFF
         val rssi = buf.get().toInt()
         val encryptionCode = buf.get().toInt() and 0xFF
-
-
-
-
-
-
-
 
         require(channel in 1..14) { "canal fora da faixa: $channel" }
         require(rssi in -100..0) { "RSSI fora da faixa: $rssi" }

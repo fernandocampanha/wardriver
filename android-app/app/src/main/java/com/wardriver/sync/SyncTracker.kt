@@ -1,16 +1,5 @@
 package com.wardriver.sync
 
-
-
-
-
-
-
-
-
-
-
-
 class SyncTracker(
     private val quietMs: Long = 3_000L,
     private val timeoutMs: Long = 120_000L,
@@ -47,7 +36,6 @@ class SyncTracker(
     @Synchronized fun onSession(nowMs: Long) { if (active) { sessionSeen = true; lastEventAt = nowMs } }
 
     @Synchronized fun onBlockBegin(nowMs: Long) { if (active) { openBlocks++; lastEventAt = nowMs } }
-
 
     @Synchronized
     fun onBlockEnd(nowMs: Long, confirmed: Boolean) {

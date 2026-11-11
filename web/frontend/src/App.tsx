@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as api from './api';
 import Tooltip from './charts/Tooltip';
@@ -29,7 +28,6 @@ export default function App() {
     api.me().then(setSession).catch(() => setFatal('Não foi possível falar com o servidor.'));
   }, []);
 
-
   const termLost = useCallback(() => {
     setSession((s) => (s ? { ...s, accepted: false } : s));
     setFacets(null);
@@ -39,7 +37,6 @@ export default function App() {
     if (!session?.accepted) return;
     api.getFacets().then(setFacets).catch((e) => e instanceof api.TermError && termLost());
   }, [session?.accepted, termLost]);
-
 
   useEffect(() => {
     main.current?.focus({ preventScroll: true });

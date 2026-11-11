@@ -1,9 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-
-
-
 typedef struct {
     char c;
     uint8_t cols[5];

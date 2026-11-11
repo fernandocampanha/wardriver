@@ -1,5 +1,3 @@
-
-
 import re
 from collections import Counter
 from typing import Dict, Iterable, List, Optional
@@ -27,7 +25,6 @@ def _sibling_keys(o: List[int]) -> List[str]:
     a, b, c = "%02X" % o[3], "%02X" % o[4], "%02X" % o[5]
     return [f"{oui}|{a}|{b}|*", f"{oui}|{a}|*|{c}", f"{oui}|*|{b}|{c}"]
 def hidden_origin(networks: Iterable[Network]) -> Dict[str, int]:
-
 
     nets = list(networks)
     named_keys = set()

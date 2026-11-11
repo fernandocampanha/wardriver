@@ -1,5 +1,3 @@
-
-
 const TERM_VERSION = '2026-10-10';
 const COOKIE = 'wd_term';
 const MOCK_PASSWORD = 'dev';
@@ -134,7 +132,6 @@ function handle(url, method, accepted) {
   if (p === '/api/facets') return [200, { cities: facet(NETS, 'city', 300), vendors: facet(NETS, 'vendor', 300), term_version: TERM_VERSION }];
   return [404, { error: 'nao encontrado' }];
 }
-
 
 export function mockApi() {
   return {

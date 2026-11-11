@@ -5,7 +5,6 @@ from app.analysis import compute_stats, hidden_origin
 from app.db import Store, make_engine, sessions
 from app.merge import Network, merge_observations
 
-
 def net(bssid="70:AA:BB:00:00:01", **kw):
     base = dict(ssid="", ssid_hidden=True, channel=6, rssi=-70, encryption="WPA2", times_seen=1,
                 last_session_id="s", last_seen_at_ms=0)
@@ -13,7 +12,6 @@ def net(bssid="70:AA:BB:00:00:01", **kw):
     if base["ssid"]:
         base["ssid_hidden"] = False
     return Network(bssid=bssid, **base)
-
 
 class MergeTest(unittest.TestCase):
     def test_name_never_replaced_by_hidden(self):
@@ -47,7 +45,6 @@ class MergeTest(unittest.TestCase):
 
     def test_times_seen_is_max_not_sum(self):
         self.assertEqual(merge_observations(net(times_seen=5), net(times_seen=3)).times_seen, 5)
-
 
 class StoreTest(unittest.TestCase):
     def setUp(self):
@@ -105,7 +102,6 @@ class StoreTest(unittest.TestCase):
             row = c.execute(text("SELECT city, local_admin, default_name FROM networks")).one()
         self.assertEqual(tuple(row), ("Catanduva - SP", 1, 1))
 
-
 class AnalysisTest(unittest.TestCase):
     def test_hidden_origin_sibling_and_local_admin(self):
         visible = net("70:AA:BB:11:22:33", ssid="Casa")
@@ -130,7 +126,6 @@ class AnalysisTest(unittest.TestCase):
     def test_empty(self):
         s = compute_stats([])
         self.assertEqual((s["total"], s["hidden"], s["first_seen_ms"]), (0, 0, None))
-
 
 if __name__ == "__main__":
     unittest.main()

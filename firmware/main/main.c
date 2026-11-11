@@ -1,20 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,39 +23,10 @@
 
 static const char *TAG = "wardriver";
 
-
-
-
-
-
-
-
-
-
-
-
-
 static bool s_storage_mounted = false;
 static volatile bool s_storage_ok = false;
 
-
-
-
 #define STORAGE_RETRY_EVERY_CYCLES 5
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #define THROTTLE_SETS 128
 #define THROTTLE_WAYS 4
@@ -89,9 +43,6 @@ static bool bssid_is_zero(const uint8_t *bssid)
     static const uint8_t zero[6] = {0};
     return memcmp(bssid, zero, 6) == 0;
 }
-
-
-
 
 static bool log_throttle_should_write(const uint8_t *bssid, int64_t now_us)
 {
@@ -135,18 +86,6 @@ static const char *encryption_to_str(wifi_sniffer_encryption_t enc)
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 static esp_err_t rotate_session_and_reset_count(char *old_id_out, size_t old_len,
                                                  char *new_id_out, size_t new_len)
 {
@@ -156,23 +95,6 @@ static esp_err_t rotate_session_and_reset_count(char *old_id_out, size_t old_len
     }
     return ret;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 typedef enum {
     GPS_SRC_NONE = 0,
@@ -233,19 +155,9 @@ static gps_source_t get_best_gps_data(gps_data_t *out)
     return pick;
 }
 
-
-
-
-
-
 static void on_beacon(const wifi_sniffer_network_t *net, bool is_new, bool ssid_just_revealed, void *ctx)
 {
     (void)ctx;
-
-
-
-
-
 
     if (!log_throttle_should_write(net->bssid, esp_timer_get_time()) && !ssid_just_revealed) {
         return;
@@ -284,10 +196,6 @@ static void on_beacon(const wifi_sniffer_network_t *net, bool is_new, bool ssid_
                                         : ESP_ERR_INVALID_STATE;
     if (write_ret != ESP_OK) {
 
-
-
-
-
         static int64_t s_last_write_fail_log_us = 0;
         int64_t now_us = esp_timer_get_time();
         if (now_us - s_last_write_fail_log_us > 10LL * 1000000) {
@@ -296,7 +204,6 @@ static void on_beacon(const wifi_sniffer_network_t *net, bool is_new, bool ssid_
         }
     }
 #if CONFIG_WARDRIVER_BT_ENABLED
-
 
     bt_spp_sync_stream_record(&rec, sizeof(rec));
 #endif
@@ -327,16 +234,6 @@ static const char *reset_reason_str(esp_reset_reason_t reason)
         default:                return "desconhecido";
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 static void seed_count_task(void *arg)
 {
@@ -386,9 +283,6 @@ void app_main(void)
 {
     ESP_LOGI(TAG, "wardriver iniciando...");
 
-
-
-
     esp_reset_reason_t rst = esp_reset_reason();
     if (rst == ESP_RST_BROWNOUT) {
         ESP_LOGW(TAG, "motivo do ultimo reset: %s", reset_reason_str(rst));
@@ -406,11 +300,7 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-
-
-
     ESP_ERROR_CHECK(phone_gps_init());
-
 
     static char session_id[32] = "sem_storage";
     s_storage_mounted = (flash_storage_init() == ESP_OK);
@@ -425,11 +315,7 @@ void app_main(void)
         ESP_LOGE(TAG, "memoria interna indisponivel — capturas nao serao persistidas");
     }
 
-
-
 #if CONFIG_WARDRIVER_OLED_ENABLED
-
-
 
     if (oled_display_init() != ESP_OK) {
         ESP_LOGW(TAG, "display OLED nao respondeu no boot — o guardiao continua tentando");
@@ -439,7 +325,6 @@ void app_main(void)
     }
 #endif
 
-
 #if CONFIG_WARDRIVER_BT_ENABLED
     bt_spp_sync_set_storage_root(s_storage_mounted ? CONFIG_WARDRIVER_FLASH_STORAGE_MOUNT_POINT : "");
     bt_spp_sync_set_current_session(s_storage_ok ? session_id : "");
@@ -447,26 +332,14 @@ void app_main(void)
         ESP_LOGW(TAG, "sincronizacao Bluetooth indisponivel");
     } else if (s_storage_mounted) {
 
-
-
-
-
-
-
-
-
         bt_spp_sync_set_rotate_backend(rotate_session_and_reset_count, session_id, sizeof(session_id));
     }
 #endif
 
-
     ESP_ERROR_CHECK(gps_nmea_init());
     ESP_ERROR_CHECK(gps_nmea_start());
 
-
     ESP_ERROR_CHECK(wifi_sniffer_init());
-
-
 
     ESP_ERROR_CHECK(wifi_sniffer_start(CONFIG_WARDRIVER_WIFI_CHANNEL, on_beacon, NULL));
 
@@ -482,19 +355,12 @@ void app_main(void)
         vTaskDelay(pdMS_TO_TICKS(CONFIG_WARDRIVER_STATUS_UPDATE_INTERVAL_MS));
         status_cycle++;
 
-
-
-
-
         if (s_storage_mounted && !s_storage_ok && status_cycle % STORAGE_RETRY_EVERY_CYCLES == 0 &&
             flash_storage_start_session(session_id, sizeof(session_id)) == ESP_OK) {
             bt_spp_sync_set_current_session(session_id);
             s_storage_ok = true;
             ESP_LOGI(TAG, "espaco liberado — sessao %s aberta, capturas voltaram a ser gravadas", session_id);
         }
-
-
-
 
         gps_data_t gps;
         gps_nmea_get_data(&gps);
@@ -503,8 +369,6 @@ void app_main(void)
         bool mod_fresh = gps.last_update_us > 0 &&
                          (esp_timer_get_time() - gps.last_update_us) < GPS_MODULE_FRESH_US;
         bool mod_fix = gps.has_fix && mod_fresh;
-
-
 
         static bool s_prev_mod_fix = false;
         static gps_source_t s_prev_source = GPS_SRC_NONE;
@@ -526,23 +390,7 @@ void app_main(void)
             s_prev_source = source;
         }
 
-
-
         uint32_t networks = wifi_sniffer_get_unique_count();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         uint32_t heap_free = (uint32_t)esp_get_free_heap_size();
         if (heap_free < CONFIG_WARDRIVER_DEDUP_RESET_HEAP_FLOOR_BYTES) {
@@ -558,9 +406,6 @@ void app_main(void)
             }
         }
 
-
-
-
         if (status_cycle % 15 == 0) {
             wifi_sniffer_stats_t st;
             wifi_sniffer_get_stats(&st);
@@ -572,8 +417,6 @@ void app_main(void)
                      (unsigned)st.names_revealed_probe, (unsigned)st.names_revealed_beacon,
                      (unsigned)st.name_kept, (unsigned)st.alloc_failures);
 
-
-
             char ch_buf[192];
             size_t ch_n = 0;
             ch_buf[0] = '\0';
@@ -583,9 +426,6 @@ void app_main(void)
             ESP_LOGI(TAG, "canais: %s | trocas=%u recusadas=%u | assoc_req=%u nomes_por_assoc=%u",
                      ch_buf, (unsigned)st.hop_switches, (unsigned)st.hop_failures,
                      (unsigned)st.assoc_requests, (unsigned)st.names_revealed_assoc);
-
-
-
 
             oled_stats_t ost = {0};
 #if CONFIG_WARDRIVER_OLED_ENABLED
@@ -597,8 +437,6 @@ void app_main(void)
 #endif
 
 #if CONFIG_WARDRIVER_BT_ENABLED
-
-
 
             static char stats_line[720];
             snprintf(stats_line, sizeof(stats_line),
@@ -623,8 +461,6 @@ void app_main(void)
 #endif
         }
 
-
-
         int storage_percent = -1;
         if (s_storage_ok) {
             size_t used = 0, total = 0;
@@ -642,13 +478,9 @@ void app_main(void)
 #if CONFIG_WARDRIVER_OLED_ENABLED
         {
 
-
-
             uint8_t mod_sats_shown = mod_fix ? gps.satellites : (mod_fresh ? gps.sats_tracked : 0);
             esp_err_t oled_ret = oled_display_show_status(networks, mod_sats_shown, gps_source_for_oled(source),
                                                             s_storage_ok, storage_percent);
-
-
 
             static bool s_oled_was_failing = false;
             static unsigned s_oled_fail_cycles = 0;

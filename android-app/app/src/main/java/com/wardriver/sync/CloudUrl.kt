@@ -3,12 +3,6 @@ package com.wardriver.sync
 import java.net.URI
 import java.net.URISyntaxException
 
-
-
-
-
-
-
 object CloudUrl {
 
     data class Endpoint(val base: String) {

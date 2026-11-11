@@ -38,14 +38,10 @@ class MainActivity : AppCompatActivity(), SyncListener {
     private var service: WardriverSyncService? = null
     private var bound = false
 
-
-
-
     private var allNetworks: Collection<NetworkRecord> = emptyList()
     private var searchQuery: String = ""
     private var encryptionFilter: String = ENCRYPTION_FILTER_ALL
     private var hiddenOnly: Boolean = false
-
 
     private var namesRevealed: Int = 0
 
@@ -71,8 +67,6 @@ class MainActivity : AppCompatActivity(), SyncListener {
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
-
-
 
         val btGranted = results
             .filterKeys { it != android.Manifest.permission.ACCESS_FINE_LOCATION }
@@ -155,8 +149,6 @@ class MainActivity : AppCompatActivity(), SyncListener {
         startService(Intent(this, WardriverSyncService::class.java))
     }
 
-
-
     private fun setupFilters() {
         val encryptionLabels = listOf(getString(R.string.filter_all_encryptions), "OPEN", "WEP", "WPA", "WPA2", "WPA3")
         binding.spinnerEncryption.adapter = ArrayAdapter(
@@ -229,8 +221,6 @@ class MainActivity : AppCompatActivity(), SyncListener {
         }
     }
 
-
-
     private fun importCsvFrom(uri: Uri) {
         val svc = service
         if (svc == null) {
@@ -282,7 +272,6 @@ class MainActivity : AppCompatActivity(), SyncListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             needed.add(android.Manifest.permission.POST_NOTIFICATIONS)
         }
-
 
         needed.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
         if (needed.isEmpty()) {

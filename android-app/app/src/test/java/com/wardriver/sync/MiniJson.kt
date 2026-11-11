@@ -1,6 +1,5 @@
 package com.wardriver.sync
 
-
 object MiniJson {
     fun parse(text: String): Any? {
         val p = P(text)

@@ -3,18 +3,12 @@ package com.wardriver.sync
 import android.content.Context
 import java.util.UUID
 
-
-
-
-
 class CloudPrefs(context: Context) : Watermark {
     private val prefs = context.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
-
 
     var autoEnabled: Boolean
         get() = prefs.getBoolean("auto_enabled", false)
         set(v) = prefs.edit().putBoolean("auto_enabled", v).apply()
-
 
     var cloudEnabled: Boolean
         get() = prefs.getBoolean("cloud_enabled", false)
@@ -28,13 +22,11 @@ class CloudPrefs(context: Context) : Watermark {
         get() = prefs.getString("url", "").orEmpty()
         set(v) = prefs.edit().putString("url", v.trim()).apply()
 
-
     var consentAccepted: Boolean
         get() = prefs.getBoolean("consent", false)
         set(v) = prefs.edit().putBoolean("consent", v).apply()
 
     val hasToken: Boolean get() = !token.isNullOrEmpty()
-
 
     var token: String?
         get() = SecretBox.open(prefs.getString("token_sealed", null))
@@ -58,14 +50,12 @@ class CloudPrefs(context: Context) : Watermark {
 
     fun recordCycle(nowMs: Long, summary: String) { lastCycleMs = nowMs; lastCycleSummary = summary }
 
-
     val deviceId: String
         get() = prefs.getString("device_id", null) ?: ("android-" + UUID.randomUUID().toString().take(8)).also {
             prefs.edit().putString("device_id", it).apply()
         }
 
     fun endpoint(): CloudUrl.Endpoint? = (CloudUrl.parse(url) as? CloudUrl.Parsed.Ok)?.endpoint
-
 
     val cloudReady: Boolean get() = cloudEnabled && consentAccepted && endpoint() != null && hasToken
 

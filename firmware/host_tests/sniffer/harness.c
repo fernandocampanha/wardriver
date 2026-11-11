@@ -13,7 +13,6 @@
 #include "freertos/semphr.h"
 #include "freertos/queue.h"
 
-
 static int64_t g_now_us = 5000LL * 1000000;
 int64_t esp_timer_get_time(void) { return g_now_us; }
 void vTaskDelay(uint32_t t) { g_now_us += (int64_t)t * 1000; }
@@ -24,12 +23,10 @@ int xSemaphoreTake(SemaphoreHandle_t m, uint32_t t) { (void)m; (void)t; return 1
 int xSemaphoreGive(SemaphoreHandle_t m) { (void)m; return 1; }
 void harness_log(char lvl, const char *fmt, ...) { (void)lvl; (void)fmt; }
 
-
 struct FakeQueue { uint32_t len, isz, head, count; uint8_t *data; };
 QueueHandle_t xQueueCreate(uint32_t len, uint32_t isz) { QueueHandle_t q = calloc(1, sizeof *q); q->len = len; q->isz = isz; q->data = calloc(len, isz); return q; }
 int xQueueSend(QueueHandle_t q, const void *item, uint32_t t) { (void)t; if (q->count == q->len) return 0; memcpy(q->data + ((q->head + q->count) % q->len) * q->isz, item, q->isz); q->count++; return 1; }
 int xQueueReceive(QueueHandle_t q, void *item, uint32_t t) { (void)t; if (!q->count) return 0; memcpy(item, q->data + q->head * q->isz, q->isz); q->head = (q->head + 1) % q->len; q->count--; return 1; }
-
 
 static void (*g_cb)(void *, wifi_promiscuous_pkt_type_t);
 static int g_last_channel = 0;
@@ -43,9 +40,7 @@ esp_err_t esp_wifi_set_promiscuous_rx_cb(void (*cb)(void *, wifi_promiscuous_pkt
 esp_err_t esp_wifi_set_promiscuous(int en) { (void)en; return ESP_OK; }
 esp_err_t esp_wifi_set_channel(uint8_t ch, wifi_second_chan_t s) { (void)s; if (ch < 1 || ch > 13) return ESP_FAIL; g_last_channel = ch; return ESP_OK; }
 
-
 #include "wifi_sniffer.c"
-
 
 static const uint8_t AP1[6] = {0x70, 0xAA, 0xBB, 0x01, 0x02, 0x03};
 static const uint8_t AP2[6] = {0x70, 0xAA, 0xBB, 0x0A, 0x0B, 0x0C};
@@ -85,7 +80,6 @@ static void inject(const uint8_t *frame, int len, uint8_t radio_ch, int8_t rssi,
 static bool queue_pop(sniffer_raw_frame_t *f) { return xQueueReceive(s_frame_queue, f, 0) == 1; }
 static void drain(void) { sniffer_raw_frame_t f; while (queue_pop(&f)) sniffer_process_frame(&f); }
 static void send(const uint8_t *fr, int len, uint8_t ch, int8_t rssi) { inject(fr, len, ch, rssi, WIFI_PKT_MGMT); drain(); }
-
 
 static struct { int calls; wifi_sniffer_network_t net; bool is_new, revealed; } g_cbinfo;
 static void net_cb(const wifi_sniffer_network_t *n, bool is_new, bool revealed, void *ctx) { (void)ctx; g_cbinfo.calls++; g_cbinfo.net = *n; g_cbinfo.is_new = is_new; g_cbinfo.revealed = revealed; }

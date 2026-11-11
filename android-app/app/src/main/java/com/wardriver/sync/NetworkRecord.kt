@@ -3,10 +3,6 @@ package com.wardriver.sync
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-
-
-
-
 @Entity(tableName = "networks")
 data class NetworkRecord(
     @PrimaryKey val bssid: String,

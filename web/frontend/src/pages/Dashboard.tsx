@@ -17,7 +17,6 @@ export interface PageProps {
   onTermLost: () => void;
 }
 
-
 export function useStats(filters: Filters, onTermLost: () => void): { stats: Stats | null; error: string } {
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState('');

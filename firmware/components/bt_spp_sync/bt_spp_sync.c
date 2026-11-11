@@ -1,19 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #include "bt_spp_sync.h"
 #include "wardriver_record.h"
 #include "phone_gps.h"
@@ -48,21 +32,10 @@ static char s_storage_root[32] = "";
 static char s_current_session_file[40] = "";
 static char s_current_session_id[40] = "";
 
-
-
 static volatile int s_active_fd = -1;
 static SemaphoreHandle_t s_write_mutex = NULL;
 
-
-
-
-
-
-
-
 static volatile bool s_suppress_stream = false;
-
-
 
 static bool s_backlog_truncated = false;
 
@@ -78,9 +51,6 @@ static int s_pending_count = 0;
 static bt_spp_sync_rotate_fn_t s_rotate_fn = NULL;
 static char *s_current_session_buf = NULL;
 static size_t s_current_session_buf_len = 0;
-
-
-
 
 typedef void (*work_cb_t)(uint16_t event, void *param);
 
@@ -119,29 +89,10 @@ static void work_task(void *arg)
     }
 }
 
-
-
-
-
-
-
-
 #define SEND_STALL_TIMEOUT_US_CONTROL  (5LL * 1000000)
 #define SEND_STALL_TIMEOUT_US_LIVE     (200LL * 1000)
 
-
-
-
-
 static volatile bool s_conn_broken = false;
-
-
-
-
-
-
-
-
 
 static bool send_all(int fd, const char *buf, size_t len, int64_t stall_timeout_us)
 {
@@ -195,7 +146,6 @@ void bt_spp_sync_stream_record(const void *data, size_t len)
         return;
     }
 
-
     uint8_t frame[1 + 128];
     if (len > sizeof(frame) - 1) {
         xSemaphoreGive(s_write_mutex);
@@ -213,7 +163,6 @@ void bt_spp_sync_send_status_line(const char *text)
     int fd = s_active_fd;
     if (fd < 0 || text == NULL || s_suppress_stream) return;
 
-
     static char line[800];
     int n = snprintf(line, sizeof(line), "%s\r\n", text);
     if (n <= 0) return;
@@ -229,8 +178,6 @@ void bt_spp_sync_send_status_line(const char *text)
     if (!ok) s_conn_broken = true;
 }
 
-
-
 static void handle_loc_line(const char *line)
 {
     double lat, lon;
@@ -242,14 +189,6 @@ static void handle_loc_line(const char *line)
         ESP_LOGW(TAG, "linha LOC malformada, ignorada: %s", line);
     }
 }
-
-
-
-
-
-
-
-
 
 static bool remove_confirmed_file(const char *filename)
 {
@@ -313,22 +252,11 @@ static void handle_ack_line(int fd, const char *line)
     send_line_locked(fd, reply, strlen(reply));
 }
 
-
-
-
-
 typedef enum {
     BACKLOG_OFFER_OK,
     BACKLOG_OFFER_SKIPPED,
     BACKLOG_OFFER_CONN_BROKEN,
 } backlog_offer_result_t;
-
-
-
-
-
-
-
 
 static bool file_fully_readable(FILE *f, long expected_size)
 {
@@ -341,13 +269,6 @@ static bool file_fully_readable(FILE *f, long expected_size)
     clearerr(f);
     return ok;
 }
-
-
-
-
-
-
-
 
 static backlog_offer_result_t offer_file_for_backlog(int fd, const char *filename)
 {
@@ -362,18 +283,8 @@ static backlog_offer_result_t offer_file_for_backlog(int fd, const char *filenam
         return send_line_locked(fd, line, strlen(line)) ? BACKLOG_OFFER_OK : BACKLOG_OFFER_CONN_BROKEN;
     }
 
-
-
-
-
-
-
     struct stat st;
     long file_size = (fstat(fileno(f), &st) == 0) ? (long)st.st_size : -1;
-
-
-
-
 
     if (!file_fully_readable(f, file_size)) {
         fclose(f);
@@ -400,9 +311,6 @@ static backlog_offer_result_t offer_file_for_backlog(int fd, const char *filenam
     while ((n = fread(filebuf, 1, sizeof(filebuf), f)) > 0) {
         if (!send_line_locked(fd, filebuf, n)) {
 
-
-
-
             fclose(f);
             ESP_LOGW(TAG, "backlog: envio de %s interrompido apos %ld/%ld bytes — conexao sera reiniciada",
                      filename, total, file_size);
@@ -414,9 +322,6 @@ static backlog_offer_result_t offer_file_for_backlog(int fd, const char *filenam
     bool read_err = ferror(f);
     fclose(f);
     if (read_err || (file_size >= 0 && total != file_size)) {
-
-
-
 
         ESP_LOGE(TAG, "backlog: leitura de %s inconsistente (%ld lidos, %ld anunciados, erro=%d) — conexao sera reiniciada",
                  filename, total, file_size, read_err);
@@ -440,13 +345,6 @@ static backlog_offer_result_t offer_file_for_backlog(int fd, const char *filenam
     return BACKLOG_OFFER_OK;
 }
 
-
-
-
-
-
-
-
 static void offer_backlog_batch(int fd)
 {
     s_backlog_truncated = false;
@@ -468,23 +366,10 @@ static void offer_backlog_batch(int fd)
             break;
         }
 
-
-
-
     }
     s_backlog_truncated = !s_conn_broken && (s_pending_count >= MAX_PENDING_FILES);
     closedir(dir);
 }
-
-
-
-
-
-
-
-
-
-
 
 static void do_manual_sync(int fd)
 {
@@ -540,7 +425,6 @@ static void spp_connection_task(void *arg)
              s_storage_root[0] != '\0' ? s_storage_root : "(nenhum storage ativo)");
     send_line_locked(fd, line, strlen(line));
 
-
     s_pending_count = 0;
     if (!s_conn_broken) offer_backlog_batch(fd);
     if (s_conn_broken) goto connection_broken;
@@ -552,17 +436,10 @@ static void spp_connection_task(void *arg)
              s_pending_count);
     send_line_locked(fd, line, strlen(line));
 
-
-
-
-
     snprintf(line, sizeof(line), "--- SESSION %s ---\r\n", s_current_session_id);
     send_line_locked(fd, line, strlen(line));
 
     if (s_conn_broken) goto connection_broken;
-
-
-
 
     s_active_fd = fd;
 
@@ -574,8 +451,6 @@ static void spp_connection_task(void *arg)
         int n = read(fd, rxbuf, sizeof(rxbuf));
         if (n < 0) break;
         if (n == 0) {
-
-
 
             vTaskDelay(pdMS_TO_TICKS(200));
             continue;
@@ -616,8 +491,6 @@ connection_broken:
     close(fd);
     vTaskDelete(NULL);
 }
-
-
 
 static void spp_event_handler(uint16_t e, void *p)
 {
@@ -695,8 +568,6 @@ static void gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
     }
 }
 
-
-
 void bt_spp_sync_set_storage_root(const char *mount_point)
 {
     strncpy(s_storage_root, mount_point, sizeof(s_storage_root) - 1);
@@ -762,8 +633,6 @@ esp_err_t bt_spp_sync_init(void)
 
     ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb));
     ESP_ERROR_CHECK(esp_spp_register_callback(spp_stack_cb));
-
-
 
     esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_VARIABLE;
     esp_bt_pin_code_t pin_code;

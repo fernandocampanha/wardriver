@@ -1,4 +1,3 @@
-
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,10 +7,8 @@ from sqlalchemy.engine import URL
 
 ROOT = Path(__file__).resolve().parent.parent
 
-
 class ConfigError(Exception):
     pass
-
 
 @dataclass
 class Settings:
@@ -27,9 +24,7 @@ class Settings:
     rate_per_minute: int
     rate_burst_map: int
 
-
 def database_url(env: Mapping[str, str]) -> Union[str, URL]:
-
 
     url = env.get("WARDRIVER_DATABASE_URL", "").strip()
     if url:
@@ -42,14 +37,12 @@ def database_url(env: Mapping[str, str]) -> Union[str, URL]:
                       port=int(env.get("WARDRIVER_DB_PORT", "3306")), database=env.get("WARDRIVER_DB_NAME", "wardriver"),
                       query={"charset": "utf8mb4"})
 
-
 def panel_password_hash(env: Mapping[str, str]) -> str:
     value = env.get("WARDRIVER_WEB_PANEL_PASSWORD_HASH", "").strip()
     if not value:
         raise ConfigError("painel sem senha: defina WARDRIVER_WEB_PANEL_PASSWORD_HASH "
                           "(gere com `python -m app.hashpw --password`)")
     return value
-
 
 def load_settings(env: Mapping[str, str] = os.environ) -> Settings:
     return Settings(

@@ -1,4 +1,3 @@
-
 export const BrandMark = () => (
   <svg className="brandmark" viewBox="0 0 28 28" width="30" height="30" aria-hidden="true" focusable="false">
     <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeWidth="1.4" />

@@ -1,44 +1,10 @@
 #pragma once
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #include <stdint.h>
 
 #define WARDRIVER_SSID_BUF_LEN 33
 
-
-
-
-
-
-
-
-
 #define WARDRIVER_LIVE_RECORD_MARKER 0x01
-
 
 #define WARDRIVER_FLAG_SSID_HIDDEN   (1 << 0)
 #define WARDRIVER_FLAG_HAS_FIX       (1 << 1)

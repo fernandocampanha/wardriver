@@ -6,16 +6,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
-
-
-
-
-
-
-
-
-
 object FirmwareStatsLog {
 
     const val FILE_NAME = "firmware_stats.log"
@@ -27,7 +17,6 @@ object FirmwareStatsLog {
         val dir = context.getExternalFilesDir(null) ?: context.filesDir
         return File(dir, FILE_NAME)
     }
-
 
     fun append(context: Context, line: String, nowMs: Long = System.currentTimeMillis()) {
         synchronized(lock) {
@@ -46,7 +35,6 @@ object FirmwareStatsLog {
         }
     }
 
-
     fun last(context: Context, count: Int): List<Entry> = synchronized(lock) {
         try {
             val f = file(context)
@@ -58,7 +46,6 @@ object FirmwareStatsLog {
     }
 
     data class Entry(val stamp: String, val values: Map<String, String>)
-
 
     fun parseLine(line: String): Entry? {
         val m = Regex("^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) STATS (.*)$").find(line.trim()) ?: return null

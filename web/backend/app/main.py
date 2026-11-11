@@ -1,5 +1,3 @@
-
-
 import logging
 import time
 from pathlib import Path
@@ -32,7 +30,6 @@ def network_to_json(n) -> dict:
     return {"bssid": n.bssid, "ssid": n.ssid, "hidden": n.ssid_hidden or not n.ssid, "channel": n.channel,
             "rssi": n.rssi, "enc": n.encryption, "seen": n.times_seen, "wps": n.wps_active,
             "lat": n.lat, "lon": n.lon, "last": n.last_seen_at_ms}
-
 
 def row_to_json(r: dict) -> dict:
     return {"bssid": r["bssid"], "ssid": r["ssid"], "hidden": bool(r["ssid_hidden"]) or not r["ssid"],
@@ -80,7 +77,6 @@ def require_term(request: Request) -> None:
 
     if not has_accepted(request):
         raise HTTPException(403, "nao autenticado")
-
 
 def rate_limit(request: Request) -> None:
     ctx = ctx_of(request)
@@ -219,7 +215,6 @@ def create_app(settings: Optional[Settings] = None, store: Optional[Store] = Non
         total, rows = ctx_of(request).store.sync_history(limit, offset)
         return JSONResponse({"total": total, "limit": limit, "offset": offset, "events": rows}, headers=NOSTORE)
 
-
     @app.get("/api/v1/ping", dependencies=[Depends(require_bearer)])
     def ping():
         return {"ok": True, "server_time_ms": int(time.time() * 1000)}
@@ -250,7 +245,6 @@ def create_app(settings: Optional[Settings] = None, store: Optional[Store] = Non
     if static_dir.is_dir():
         app.mount("/", _Static(directory=static_dir, html=True), name="frontend")
     return app
-
 
 class _Static(StaticFiles):
 

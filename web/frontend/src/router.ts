@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState } from 'react';
 
 export type Path = '/' | '/redes' | '/analise' | '/sincronizacoes' | '/sobre' | '/termo';
@@ -45,7 +44,6 @@ export function useRoute(): Route {
   }, []);
   return route;
 }
-
 
 export function useSetParams(route: Route): (change: (p: URLSearchParams) => void, replace?: boolean) => void {
   return useCallback(

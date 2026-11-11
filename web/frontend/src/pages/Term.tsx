@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import * as api from '../api';
 import { navigate, hrefOf } from '../router';
 
-
 export function TermText() {
   return (
     <div className="prose">
@@ -53,7 +52,6 @@ export default function Term({
 }) {
   const [agree, setAgree] = useState(false);
   const [password, setPassword] = useState('');
-
 
   useEffect(() => {
     const prev = document.body.style.overflow;

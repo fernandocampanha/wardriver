@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #include "gps_nmea.h"
 
 #include <string.h>
@@ -26,10 +20,6 @@ static gps_data_t s_data;
 static SemaphoreHandle_t s_data_mutex = NULL;
 static uart_port_t s_uart_num;
 
-
-
-
-
 static bool nmea_checksum_ok(const char *sentence)
 {
     const char *star = strchr(sentence, '*');
@@ -42,9 +32,6 @@ static bool nmea_checksum_ok(const char *sentence)
     uint8_t given = (uint8_t)strtol(star + 1, NULL, 16);
     return calc == given;
 }
-
-
-
 
 static int split_fields(char *buf, char **fields, int max_fields)
 {
@@ -78,16 +65,11 @@ static double nmea_to_decimal(const char *nmea_val, char hemisphere)
     return decimal;
 }
 
-
-
-
-
 static void parse_rmc(const char *line)
 {
     char buf[GPS_LINE_MAX_LEN];
     strncpy(buf, line, sizeof(buf) - 1);
     buf[sizeof(buf) - 1] = '\0';
-
 
     char *fields[13] = {0};
     int n = split_fields(buf, fields, 13);
@@ -115,7 +97,6 @@ static void parse_gga(const char *line)
     strncpy(buf, line, sizeof(buf) - 1);
     buf[sizeof(buf) - 1] = '\0';
 
-
     char *fields[15] = {0};
     int n = split_fields(buf, fields, 15);
     if (n < 10) return;
@@ -125,8 +106,6 @@ static void parse_gga(const char *line)
     s_data.satellites  = (uint8_t)atoi(fields[7]);
     s_data.hdop        = strtof(fields[8], NULL);
     s_data.altitude_m  = strtof(fields[9], NULL);
-
-
 
     if (s_data.fix_quality > 0) {
         s_data.latitude  = nmea_to_decimal(fields[2], fields[3][0]);
@@ -138,12 +117,6 @@ static void parse_gga(const char *line)
     s_data.last_update_us = esp_timer_get_time();
     xSemaphoreGive(s_data_mutex);
 }
-
-
-
-
-
-
 
 static void parse_gsv(const char *line)
 {
@@ -187,7 +160,6 @@ static void gps_process_sentence(const char *line)
     size_t len = strlen(line);
     if (len < 6) return;
 
-
     if (strncmp(&line[3], "RMC", 3) == 0) {
         parse_rmc(line);
     } else if (strncmp(&line[3], "GGA", 3) == 0) {
@@ -196,10 +168,6 @@ static void gps_process_sentence(const char *line)
         parse_gsv(line);
     }
 }
-
-
-
-
 
 static void gps_uart_task(void *arg)
 {
@@ -231,10 +199,6 @@ static void gps_uart_task(void *arg)
         }
     }
 }
-
-
-
-
 
 esp_err_t gps_nmea_init(void)
 {

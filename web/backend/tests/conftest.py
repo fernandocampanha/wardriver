@@ -10,7 +10,6 @@ PASSWORD = "test-password"
 CSRF = {"X-Requested-With": "wardriver-web"}
 BEARER = {"Authorization": f"Bearer {TOKEN}"}
 
-
 def make_settings(tmp_path, **over) -> Settings:
     base = dict(database_url="sqlite://", panel_password_hash=auth.hash_password(PASSWORD),
                 upload_token_sha256=auth.token_sha256(TOKEN), session_ttl_s=3600,
@@ -19,7 +18,6 @@ def make_settings(tmp_path, **over) -> Settings:
     base.update(over)
     return Settings(**base)
 
-
 @pytest.fixture
 def static_dir(tmp_path):
     d = tmp_path / "dist"
@@ -27,7 +25,6 @@ def static_dir(tmp_path):
     (d / "index.html").write_text("<!doctype html><html><body><div id=root></div></body></html>")
     (d / "assets" / "app-abc123.js").write_text("console.log(1)")
     return d
-
 
 @pytest.fixture
 def make_client(tmp_path, static_dir):
@@ -44,11 +41,9 @@ def make_client(tmp_path, static_dir):
     for c in created:
         c.close()
 
-
 @pytest.fixture
 def client(make_client):
     return make_client()
-
 
 @pytest.fixture
 def accepted(client):

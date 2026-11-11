@@ -11,7 +11,6 @@ extern "C" {
 
 #define WIFI_SNIFFER_SSID_MAX_LEN 32
 
-
 #define WIFI_SNIFFER_MAX_CHANNEL 14
 
 typedef enum {
@@ -21,15 +20,6 @@ typedef enum {
     WIFI_SNIFFER_ENC_WPA2,
     WIFI_SNIFFER_ENC_WPA3,
 } wifi_sniffer_encryption_t;
-
-
-
-
-
-
-
-
-
 
 typedef struct {
     bool present;
@@ -52,74 +42,26 @@ typedef struct {
     int64_t last_seen_us;
 } wifi_sniffer_network_t;
 
-
-
-
-
-
-
-
-
-
 typedef void (*wifi_sniffer_network_cb_t)(const wifi_sniffer_network_t *network,
                                            bool is_new, bool ssid_just_revealed, void *ctx);
 
-
-
-
 esp_err_t wifi_sniffer_init(void);
-
-
-
-
-
-
 
 esp_err_t wifi_sniffer_start(uint8_t channel, wifi_sniffer_network_cb_t cb, void *ctx);
 
 esp_err_t wifi_sniffer_stop(void);
 
-
-
-
-
-
-
-
 uint32_t wifi_sniffer_get_unique_count(void);
-
-
-
-
 
 void wifi_sniffer_reset_session_count(void);
 
-
-
-
-
 bool wifi_sniffer_note_known(const uint8_t bssid[6]);
-
-
 
 uint32_t wifi_sniffer_get_table_size(void);
 
-
-
-
-
-
 size_t wifi_sniffer_trim_table(uint32_t max_age_ms);
 
-
-
-
-
-
-
 void wifi_sniffer_reset_table(void);
-
-
 
 typedef struct {
     uint32_t table_size;
@@ -137,7 +79,6 @@ typedef struct {
     uint32_t names_revealed_assoc;
     uint32_t hop_switches;
     uint32_t hop_failures;
-
 
     uint32_t rx_by_channel[WIFI_SNIFFER_MAX_CHANNEL + 1];
 } wifi_sniffer_stats_t;

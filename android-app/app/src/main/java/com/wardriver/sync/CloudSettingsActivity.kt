@@ -13,13 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
-
-
-
-
-
-
 class CloudSettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCloudSettingsBinding
@@ -55,14 +48,12 @@ class CloudSettingsActivity : AppCompatActivity() {
         binding.buttonSave.setOnClickListener { save() }
     }
 
-
     private fun validatedEndpoint(): CloudUrl.Endpoint? {
         return when (val p = CloudUrl.parse(binding.editUrl.text?.toString().orEmpty())) {
             is CloudUrl.Parsed.Ok -> { binding.layoutUrl.error = null; p.endpoint }
             is CloudUrl.Parsed.Error -> { binding.layoutUrl.error = p.message; null }
         }
     }
-
 
     private fun effectiveToken(): String? =
         binding.editToken.text?.toString()?.trim().takeUnless { it.isNullOrEmpty() } ?: prefs.token
@@ -99,7 +90,6 @@ class CloudSettingsActivity : AppCompatActivity() {
         val wantsCloud = binding.switchCloud.isChecked
         val typedToken = binding.editToken.text?.toString()?.trim().orEmpty()
         val rawUrl = binding.editUrl.text?.toString().orEmpty()
-
 
         val endpoint = if (wantsCloud || rawUrl.isNotBlank()) validatedEndpoint() ?: return else null
         if (wantsCloud && typedToken.isEmpty() && !prefs.hasToken) {

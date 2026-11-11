@@ -1,6 +1,3 @@
-
-
-
 CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; font-src 'self'; "
        "img-src 'self' data: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; "
        "base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
@@ -14,7 +11,6 @@ SECURITY_HEADERS = [
     (b"cross-origin-opener-policy", b"same-origin"),
     (b"permissions-policy", b"geolocation=(self), camera=(), microphone=()"),
 ]
-
 
 class SecurityHeadersMiddleware:
     def __init__(self, app, trust_proxy: bool = False):

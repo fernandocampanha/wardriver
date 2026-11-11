@@ -10,7 +10,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-
 private class FakeDao : NetworkDao {
     val rows = LinkedHashMap<String, NetworkRecord>()
     var failUpsert = false
@@ -37,8 +36,6 @@ class NetworkStoreTest {
     ) = NetworkRecord(b, ssid, ssid.isEmpty(), 6, rssi, "WPA2", 1, false, lat, lon, "s", at)
 
     private fun store(dao: FakeDao = FakeDao()) = NetworkStore(dao) to dao
-
-
 
     @Test
     fun `rede oculta vista de novo COM nome passa a ter o nome, na memoria e no banco`() = runBlocking {
@@ -126,8 +123,6 @@ class NetworkStoreTest {
         assertEquals(-50, row.rssi)
     }
 
-
-
     @Test
     fun `se o banco falhar a excecao sobe e a memoria continua igual ao que esta salvo`() = runBlocking {
         val (store, dao) = store()
@@ -158,8 +153,6 @@ class NetworkStoreTest {
         fresh.load()
         assertEquals(1, fresh.size)
     }
-
-
 
     @Test
     fun `importar CSV preenche o nome de rede oculta e conta quantas foram preenchidas`() = runBlocking {

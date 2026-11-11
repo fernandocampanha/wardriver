@@ -25,7 +25,6 @@ export default function MapView({ filters, initialView, selected, look, onLook, 
   const [summary, setSummary] = useState('Carregando…');
   const [ready, setReady] = useState(false);
 
-
   const live = useRef({ filters, look, selected, onView, onSelect, onTermLost });
   live.current = { filters, look, selected, onView, onSelect, onTermLost };
   const query = useRef({ bbox: '', zoom: 4 });
@@ -90,7 +89,6 @@ export default function MapView({ filters, initialView, selected, look, onLook, 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
   const key = toParams(filters).toString();
   const first = useRef(true);

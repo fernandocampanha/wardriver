@@ -16,8 +16,6 @@ class NetworkAdapter : RecyclerView.Adapter<NetworkAdapter.ViewHolder>() {
         val details: TextView = view.findViewById(R.id.textDetails)
     }
 
-
-
     fun submitList(newItems: Collection<NetworkRecord>) {
         items.clear()
         items.addAll(newItems.sortedByDescending { it.rssi })

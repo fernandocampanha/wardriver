@@ -30,7 +30,6 @@ class CloudUploaderTest {
         }
     }
 
-
     private class FakePoster(val script: (call: Int, json: String?) -> HttpResult) : HttpPoster {
         val calls = ArrayList<Triple<String, String, String?>>()
         val tokens = ArrayList<String>()
@@ -145,11 +144,8 @@ class CloudUploaderTest {
         assertNotNull(CloudUploader(HttpPoster { _, _, _, _ -> throw IOException("sem rota") }).ping(endpoint, token))
     }
 
-
-
     private class Req(val method: String, val path: String, val headers: Map<String, String>, val body: ByteArray)
     private class Resp(val status: Int, val body: String = "", val headers: Map<String, String> = emptyMap())
-
 
     private fun withServer(handler: (Req) -> Resp, block: (Int) -> Unit) {
         val ss = ServerSocket(0, 5, java.net.InetAddress.getByName("127.0.0.1"))
@@ -217,10 +213,6 @@ class CloudUploaderTest {
             org.junit.Assert.fail("deveria lancar")
         } catch (e: IOException) {  }
     }
-
-
-
-
 
     @Test fun `contrato com o backend real`() = runBlocking {
         val url = System.getenv("WARDRIVER_IT_URL"); val tok = System.getenv("WARDRIVER_IT_TOKEN")

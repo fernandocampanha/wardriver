@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #include "flash_storage.h"
 
 #include <errno.h>
@@ -24,21 +18,7 @@ static bool s_mounted = false;
 static char s_mount_point[32];
 static char s_current_session_id[32] = "";
 
-
-
-
-
-
 static SemaphoreHandle_t s_file_mutex = NULL;
-
-
-
-
-
-
-
-
-
 
 static esp_err_t open_new_session_locked(char *session_id_out, size_t out_len)
 {
@@ -137,9 +117,6 @@ esp_err_t flash_storage_start_session(char *session_id_out, size_t out_len)
     xSemaphoreTake(s_file_mutex, portMAX_DELAY);
     esp_err_t ret;
     if (s_session_file != NULL) {
-
-
-
 
         if (session_id_out != NULL) {
             strncpy(session_id_out, s_current_session_id, out_len - 1);

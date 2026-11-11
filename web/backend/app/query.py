@@ -1,5 +1,3 @@
-
-
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
@@ -15,10 +13,8 @@ SORTS = {"rssi": networks.c.rssi, "ssid": networks.c.ssid, "last": networks.c.la
 MAX_TOKENS = 8
 MAX_LIST = 50
 
-
 def _like_escape(s: str) -> str:
     return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-
 
 @dataclass
 class Filters:
@@ -86,7 +82,6 @@ class Filters:
             out.append(and_(c.lat >= s, c.lat <= n, c.lon >= w, c.lon <= e))
         return out
 
-
 def _ints(raw: str, lo: int, hi: int, name: str) -> List[int]:
     try:
         vals = [int(x) for x in raw.split(",") if x.strip()]
@@ -96,13 +91,11 @@ def _ints(raw: str, lo: int, hi: int, name: str) -> List[int]:
         raise HTTPException(400, f"{name} fora dos limites")
     return vals
 
-
 def _strs(raw: str, name: str) -> List[str]:
     vals = [x.strip() for x in raw.split("|") if x.strip()]
     if len(vals) > MAX_LIST or any(len(v) > 80 for v in vals):
         raise HTTPException(400, f"{name} fora dos limites")
     return vals
-
 
 def filters_from_query(
     q: str = Query("", max_length=100), enc: str = Query("", max_length=60), channel: str = Query("", max_length=120),

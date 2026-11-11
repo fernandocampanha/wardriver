@@ -1,6 +1,5 @@
 package com.wardriver.sync
 
-
 sealed class HardwareOutcome {
     data class Synced(val blocks: Int, val problems: Int) : HardwareOutcome()
     data class Skipped(val reason: String) : HardwareOutcome()
@@ -28,12 +27,6 @@ data class CycleResult(
         return "$hw · $cloud"
     }
 }
-
-
-
-
-
-
 
 class CycleRunner(
     private val syncHardware: suspend () -> HardwareOutcome,

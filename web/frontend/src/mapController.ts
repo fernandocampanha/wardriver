@@ -1,6 +1,3 @@
-
-
-
 import L from 'leaflet';
 import type { Bounds, Cell, MapResponse, Network } from './types';
 import { hasPos } from './util';
@@ -62,7 +59,6 @@ export class MapController {
   invalidate(): void {
     this.map.invalidateSize();
   }
-
 
   kick(): void {
     this.h.onMove(boundsToQuery(this.map.getBounds()), this.map.getZoom());
@@ -172,7 +168,6 @@ export class MapController {
       circle.addTo(this.layer);
     }
   }
-
 
   refreshColors(): void {
     if (this.last) this.draw(this.last);

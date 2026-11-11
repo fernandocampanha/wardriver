@@ -1,19 +1,5 @@
 package com.wardriver.sync
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 object HiddenSiblings {
 
     data class Result(
@@ -53,7 +39,6 @@ object HiddenSiblings {
         for (i in 0 until 6) out[i] = parts[i].toIntOrNull(16) ?: return null
         return out
     }
-
 
     private fun keys(o: IntArray): List<String> {
         val oui = "%02X%02X%02X".format(o[0] and 0xFD, o[1], o[2])

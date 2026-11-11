@@ -1,6 +1,3 @@
-
-
-
 import { useState, type ReactNode } from 'react';
 import { fmtInt, niceMax, pct } from '../util';
 
@@ -20,7 +17,6 @@ const tipProps = (value: string, label: string) => ({
 });
 
 const summary = (items: BarItem[]) => items.map((i) => `${i.label}: ${i.value}`).join('; ');
-
 
 export function HBars({ items, total, unit }: { items: BarItem[]; total: number; unit: string }) {
   const max = Math.max(1, ...items.map((i) => i.value));
@@ -42,7 +38,6 @@ export function HBars({ items, total, unit }: { items: BarItem[]; total: number;
     </div>
   );
 }
-
 
 export function Columns({ items, total, unit }: { items: ColumnItem[]; total: number; unit: string }) {
   const top = Math.max(1, ...items.map((i) => i.value));
@@ -83,7 +78,6 @@ export function Tile({ label, value, sub }: { label: string; value: string; sub?
     </div>
   );
 }
-
 
 export function ChartCard(props: {
   title: string;

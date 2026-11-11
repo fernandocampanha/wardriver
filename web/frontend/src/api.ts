@@ -3,7 +3,6 @@ import type { Facets, MapResponse, Page, Stats, SyncHistory } from './types';
 
 const CSRF = { 'X-Requested-With': 'wardriver-web' };
 
-
 export class TermError extends Error {}
 
 async function call(path: string, options: RequestInit = {}): Promise<Response> {

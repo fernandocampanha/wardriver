@@ -3,16 +3,6 @@ package com.wardriver.sync
 import java.text.Normalizer
 import java.util.Locale
 
-
-
-
-
-
-
-
-
-
-
 object NetworkSearch {
 
     private val DIACRITICS = Regex("\\p{Mn}+")

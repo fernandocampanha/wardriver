@@ -1,42 +1,11 @@
 package com.wardriver.sync
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 object NetworkMerge {
 
     const val UNKNOWN_ENCRYPTION = "UNKNOWN"
 
     fun hasName(r: NetworkRecord): Boolean = r.ssid.isNotEmpty() && !r.ssidHidden
     fun hasLocation(r: NetworkRecord): Boolean = r.lat != null && r.lon != null
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     fun mergeCapture(existing: NetworkRecord?, incoming: NetworkRecord): NetworkRecord {
         if (existing == null) return incoming
@@ -75,9 +44,6 @@ object NetworkMerge {
 
     fun mergeObservations(existing: NetworkRecord?, incoming: NetworkRecord): NetworkRecord {
         if (existing == null) return incoming.copy()
-
-
-
 
         val name = when {
             hasName(existing) && hasName(incoming) ->

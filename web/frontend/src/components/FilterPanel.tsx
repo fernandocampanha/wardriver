@@ -25,7 +25,6 @@ interface Props {
 
 const toggle = <T,>(arr: T[], v: T): T[] => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
-
 export default function FilterPanel({ filters, onChange, cities, vendors, count }: Props) {
   const [text, setText] = useState(filters.q);
   useEffect(() => setText(filters.q), [filters.q]);
@@ -189,7 +188,6 @@ function Group({ title, active, open, children }: { title: string; active: boole
     </details>
   );
 }
-
 
 function Picker({ items, selected, onChange, what }: { items: Facet[]; selected: string[]; onChange: (v: string[]) => void; what: string }) {
   const [term, setTerm] = useState('');

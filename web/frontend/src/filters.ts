@@ -1,5 +1,3 @@
-
-
 import type { Encryption } from './types';
 
 export interface Filters {
@@ -56,7 +54,6 @@ export function fromParams(p: URLSearchParams): Filters {
   };
 }
 
-
 export function toParams(f: Filters): URLSearchParams {
   const p = new URLSearchParams();
   if (f.q.trim()) p.set('q', f.q.trim());
@@ -77,14 +74,12 @@ export function toParams(f: Filters): URLSearchParams {
   return p;
 }
 
-
 export function toApiParams(f: Filters): URLSearchParams {
   const p = toParams(f);
   if (f.since) p.set('since', String(new Date(`${f.since}T00:00:00`).getTime()));
   if (f.until) p.set('until', String(new Date(`${f.until}T23:59:59.999`).getTime()));
   return p;
 }
-
 
 export function activeCount(f: Filters): number {
   return [...toParams(f).keys()].length;

@@ -5,7 +5,6 @@ import { encLabel, fmtDate, fmtPos, hasPos } from '../util';
 
 const ENC_KEY: Record<string, string> = { OPEN: 'open', WEP: 'wep', WPA: 'wpa', WPA2: 'wpa2', WPA3: 'wpa3', UNKNOWN: 'unknown' };
 
-
 export default function NetworkCard({ net, onClose, onShowOnMap, mapLink = true }: { net: Network; onClose?: () => void; onShowOnMap?: () => void; mapLink?: boolean }) {
   const [copied, setCopied] = useState(false);
   async function copy() {

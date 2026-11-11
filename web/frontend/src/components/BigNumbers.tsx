@@ -14,7 +14,6 @@ interface Item {
   on: boolean;
 }
 
-
 export default function BigNumbers({ stats, filters, onChange }: { stats: Stats | null; filters: Filters; onChange: (f: Filters) => void }) {
   const t = stats?.total ?? 0;
   const wpa3 = stats?.encryption.find((e) => e.name === 'WPA3')?.count ?? 0;

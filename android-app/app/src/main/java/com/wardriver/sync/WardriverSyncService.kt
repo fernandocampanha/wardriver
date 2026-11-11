@@ -44,7 +44,6 @@ import java.util.zip.CRC32
 
 enum class ConnectionStatus { DISCONNECTED, CONNECTING, CONNECTED, DEVICE_NOT_PAIRED, ERROR }
 
-
 data class ImportSummary(
     val layout: String,
     val rowsRead: Int,
@@ -65,59 +64,11 @@ interface SyncListener {
     fun onStatusChanged(status: ConnectionStatus)
     fun onNetworksUpdated(networks: Collection<NetworkRecord>)
 
-
     fun onNamesRevealed(total: Int) {}
-
 
     fun onCloudStatus(text: String) {}
     fun onLog(message: String)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class WardriverSyncService : Service() {
 
@@ -132,20 +83,12 @@ class WardriverSyncService : Service() {
         private val SESSION_REGEX = Regex("""^--- SESSION (\S*) ---$""")
         private const val INCOMING_BATCH_MAX = 200
 
-
-
-
         private const val BLOB_STALL_TIMEOUT_MS = 15_000L
-
-
 
         private const val BANNER_TIMEOUT_MS = 15_000L
         private const val WATCHDOG_PERIOD_MS = 3_000L
 
-
-
         private const val MAX_CHECKSUM_RETRIES = 3
-
 
         private const val AUTO_TICK_MS = 5_000L
     }
@@ -160,7 +103,6 @@ class WardriverSyncService : Service() {
     @Volatile private var listener: SyncListener? = null
     @Volatile private var status: ConnectionStatus = ConnectionStatus.DISCONNECTED
 
-
     @Volatile private var lastRxMs = 0L
     @Volatile private var connectedAtMs = 0L
     @Volatile private var bannerSeen = false
@@ -170,24 +112,11 @@ class WardriverSyncService : Service() {
 
     private val checksumFailures = HashMap<String, Int>()
 
-
-
-
     @Volatile private var userInitiatedDisconnect = false
     private var reconnectRunnable: Runnable? = null
     private val reconnectDelayMs = 4000L
 
-
-
-
-
-
-
     @Volatile private var inForeground = false
-
-
-
-
 
     private var locationManager: LocationManager? = null
     @Volatile private var currentOutput: OutputStream? = null
@@ -199,22 +128,12 @@ class WardriverSyncService : Service() {
         }
     }
 
-
-
-
     private val db by lazy { WardriverDatabase.getInstance(this) }
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-
-
-
-
-
     private val incoming = Channel<NetworkRecord>(Channel.UNLIMITED)
 
-
     private val store by lazy { NetworkStore(db.networkDao()) }
-
 
     private val cloudPrefs by lazy { CloudPrefs(this) }
     private val syncTracker = SyncTracker()
@@ -231,9 +150,6 @@ class WardriverSyncService : Service() {
         super.onCreate()
         createNotificationChannel()
 
-
-
-
         serviceScope.launch {
             try {
                 store.load()
@@ -246,10 +162,6 @@ class WardriverSyncService : Service() {
             processIncoming()
         }
     }
-
-
-
-
 
     suspend fun exportCsv(out: OutputStream): Int {
         val all = db.networkDao().getAll()
@@ -286,11 +198,6 @@ class WardriverSyncService : Service() {
         }
     }
 
-
-
-
-
-
     suspend fun importCsv(input: InputStream): ImportSummary {
         val parsed = withContext(Dispatchers.IO) {
             input.reader(Charsets.UTF_8).use { CsvImporter.parse(it) }
@@ -324,8 +231,6 @@ class WardriverSyncService : Service() {
 
     fun currentNetworks(): Collection<NetworkRecord> = store.values
 
-
-
     private fun notifyStoreChanged(result: ApplyResult, notificationText: String) {
         for (c in result.nameChanges) {
             val what = if (c.wasHidden) "SSID revelado" else "rede renomeada (era \"${c.previousSsid}\")"
@@ -340,7 +245,6 @@ class WardriverSyncService : Service() {
             )
         }
     }
-
 
     fun connect() {
         if (status == ConnectionStatus.CONNECTING || status == ConnectionStatus.CONNECTED) return
@@ -377,11 +281,6 @@ class WardriverSyncService : Service() {
         readThread = Thread({
             try {
 
-
-
-
-
-
                 val sock = try {
                     val m = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
                     m.invoke(device, 1) as BluetoothSocket
@@ -391,12 +290,9 @@ class WardriverSyncService : Service() {
                 }
                 socket = sock
 
-
-
                 sock.connect()
 
                 setStatus(ConnectionStatus.CONNECTED)
-
 
                 startAutoSync()
                 currentOutput = sock.outputStream
@@ -436,13 +332,6 @@ class WardriverSyncService : Service() {
         }, "bt-sync-read").also { it.start() }
     }
 
-
-
-
-
-
-
-
     private fun scheduleReconnect() {
         cancelPendingReconnect()
         val runnable = Runnable {
@@ -472,10 +361,6 @@ class WardriverSyncService : Service() {
         }
     }
 
-
-
-
-
     fun requestSync() {
         val out = currentOutput
         if (out == null) {
@@ -485,13 +370,6 @@ class WardriverSyncService : Service() {
         sendLine(out, "SYNC")
         listener?.onLog("Sincronizacao solicitada...")
     }
-
-
-
-
-
-
-
 
     @Synchronized
     private fun startAutoSync() {
@@ -521,7 +399,6 @@ class WardriverSyncService : Service() {
         autoJob = null
         syncTracker.cancel()
     }
-
 
     fun runCycleNow() {
         serviceScope.launch { runCycle("manual") }
@@ -562,7 +439,6 @@ class WardriverSyncService : Service() {
         }
     }
 
-
     private suspend fun syncWithDevice(): HardwareOutcome {
         if (status != ConnectionStatus.CONNECTED || currentOutput == null) {
             return HardwareOutcome.Skipped("sem conexão com o dispositivo")
@@ -584,7 +460,6 @@ class WardriverSyncService : Service() {
         }
     }
 
-
     private suspend fun uploadPending(): UploadResult? {
         if (!cloudPrefs.cloudReady) return null
         val endpoint = cloudPrefs.endpoint() ?: return null
@@ -594,12 +469,6 @@ class WardriverSyncService : Service() {
             endpoint, token, cloudPrefs.deviceId, source, cloudPrefs, untilMs = System.currentTimeMillis(),
         )
     }
-
-
-
-
-
-
 
     private fun startForegroundCompat(notification: Notification) {
         try {
@@ -614,10 +483,6 @@ class WardriverSyncService : Service() {
             }
             inForeground = true
         } catch (e: RuntimeException) {
-
-
-
-
 
             Log.w(TAG, "startForeground negado pelo sistema: ${e.javaClass.simpleName}: ${e.message}")
             listener?.onLog("Sem modo foreground agora (${e.javaClass.simpleName}) — abra o app e toque em Conectar para manter a coleta em segundo plano")
@@ -643,9 +508,6 @@ class WardriverSyncService : Service() {
         mainHandler.post { listener?.onStatusChanged(s) }
     }
 
-
-
-
     private fun sendLine(out: OutputStream, text: String) {
         synchronized(writeLock) {
             try {
@@ -656,9 +518,6 @@ class WardriverSyncService : Service() {
             }
         }
     }
-
-
-
 
     private fun startLocationUpdates() {
         if (!hasLocationPermission()) {
@@ -679,9 +538,6 @@ class WardriverSyncService : Service() {
         locationManager?.removeUpdates(locationListener)
         locationManager = null
     }
-
-
-
 
     private fun startTransferWatchdog() {
         stopTransferWatchdog()
@@ -711,24 +567,15 @@ class WardriverSyncService : Service() {
         watchdogRunnable = null
     }
 
-
-
-
-
-
     private fun persistBlob(records: Collection<NetworkRecord>) {
         if (records.isEmpty()) return
         val result = runBlocking { store.applyCaptures(records) }
         notifyStoreChanged(result, "${store.size} rede(s) unica(s) recebidas")
     }
 
-
-
     private fun collectBlobRecord(bytes: ByteArray, sessionId: String, into: MutableMap<String, NetworkRecord>) {
         try {
             val record = WardriverRecordCodec.decode(bytes, sessionId)
-
-
 
             into[record.bssid] = NetworkMerge.mergeCapture(into[record.bssid], record)
         } catch (e: IllegalArgumentException) {
@@ -743,20 +590,15 @@ class WardriverSyncService : Service() {
         var crcBytes = 0L
         var state = ReadState.LINE
 
-
         var blobRemaining = 0
         var blobFilename = ""
-
 
         val recordBuf = ByteArray(WardriverRecordCodec.SIZE)
         var recordBufPos = 0
 
-
-
         var liveSessionId = ""
 
         val buf = ByteArray(1024)
-
 
         val blobRecords = LinkedHashMap<String, NetworkRecord>()
 
@@ -887,7 +729,6 @@ class WardriverSyncService : Service() {
                             }
                             lineText.startsWith("STATS ") -> {
 
-
                                 FirmwareStatsLog.append(this, lineText)
                             }
                             lineText.isNotBlank() -> {
@@ -903,9 +744,6 @@ class WardriverSyncService : Service() {
         }
     }
 
-
-
-
     private fun decodeAndStore(bytes: ByteArray, sessionId: String) {
         try {
             storeRecord(WardriverRecordCodec.decode(bytes, sessionId))
@@ -917,10 +755,6 @@ class WardriverSyncService : Service() {
     private fun storeRecord(record: NetworkRecord) {
         incoming.trySend(record)
     }
-
-
-
-
 
     private suspend fun processIncoming() {
         val batch = ArrayList<NetworkRecord>(INCOMING_BATCH_MAX)
@@ -934,7 +768,6 @@ class WardriverSyncService : Service() {
                 val result = store.applyCaptures(batch)
                 notifyStoreChanged(result, "${store.size} rede(s) unica(s) recebidas")
             } catch (e: Exception) {
-
 
                 Log.e(TAG, "falha ao gravar lote de ${batch.size} registro(s): ${e.message}", e)
             }

@@ -7,11 +7,9 @@ import java.net.URL
 
 data class HttpResult(val status: Int, val body: String)
 
-
 fun interface HttpPoster {
     fun request(method: String, url: String, token: String, json: String?): HttpResult
 }
-
 
 class HttpUrlPoster(
     private val connectTimeoutMs: Int = 10_000,
@@ -46,11 +44,9 @@ class HttpUrlPoster(
     private companion object { const val MAX_BODY = 4096 }
 }
 
-
 fun interface PendingSource {
     suspend fun seenBetween(since: Long, until: Long): List<NetworkRecord>
 }
-
 
 interface Watermark {
     var value: Long
@@ -66,19 +62,6 @@ data class UploadResult(
 ) {
     val nothingToSend: Boolean get() = ok && sent == 0 && rejected == 0 && chunks == 0
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class CloudUploader(
     private val poster: HttpPoster,
@@ -119,7 +102,6 @@ class CloudUploader(
         return UploadResult(sent, rejected, chunks, ok = true)
     }
 
-
     private suspend fun sendChunk(endpoint: CloudUrl.Endpoint, token: String, device: String, chunk: List<NetworkRecord>): Pair<Int, Int> {
         val json = IngestJson.encode(device, chunk)
         var attempt = 0
@@ -150,7 +132,6 @@ class CloudUploader(
             }
         }
     }
-
 
     fun ping(endpoint: CloudUrl.Endpoint, token: String): String? = try {
         val res = poster.request("GET", endpoint.ping, token, null)

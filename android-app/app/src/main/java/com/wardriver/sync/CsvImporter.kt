@@ -6,26 +6,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 object CsvImporter {
 
     data class ParseResult(
@@ -38,7 +18,6 @@ object CsvImporter {
 
         val layout: String,
     )
-
 
     private val ALIASES: Map<String, Set<String>> = mapOf(
         "bssid" to setOf("bssid", "mac", "macaddress", "address"),
@@ -55,7 +34,6 @@ object CsvImporter {
         "session" to setOf("lastsessionid", "sessionid", "session"),
         "time" to setOf("lastseenatms", "lastseen", "timestamp", "time", "firstseen", "seenat", "date"),
     )
-
 
     private val LEGACY_COLUMNS = mapOf(
         "bssid" to 0, "ssid" to 1, "channel" to 3, "rssi" to 4, "lat" to 5, "lon" to 6, "time" to 7,
@@ -94,8 +72,6 @@ object CsvImporter {
 
                 if (looksLikeBssid(row[0])) {
 
-
-
                     require(
                         row.size >= LEGACY_MIN_COLUMNS &&
                             row[3].trim().toIntOrNull() in 1..196 &&
@@ -126,10 +102,6 @@ object CsvImporter {
 
         return ParseResult(merged.values.toList(), rowsRead, rowsSkipped, layout)
     }
-
-
-
-
 
     private fun rowToRecord(
         row: List<String>,
@@ -182,12 +154,9 @@ object CsvImporter {
 
     const val DEFAULT_RSSI = -100
 
-
-
     const val UNKNOWN_TIME_MS = 0L
 
     fun looksLikeBssid(text: String): Boolean = BSSID_REGEX.matches(text.trim())
-
 
     fun normalizeBssid(text: String): String? {
         val t = text.trim()
@@ -212,7 +181,6 @@ object CsvImporter {
     private fun parseBool(raw: String): Boolean =
         raw.trim().lowercase(Locale.ROOT) in setOf("true", "1", "yes", "y", "sim", "s", "t")
 
-
     private fun parseCoordinate(raw: String?, limit: Double): Double? {
         val v = raw?.replace(',', '.')?.toDoubleOrNull() ?: return null
         return v.takeIf { it.isFinite() && kotlin.math.abs(it) <= limit }
@@ -227,7 +195,6 @@ object CsvImporter {
             else -> null
         }
     }
-
 
     private fun parseTime(raw: String?): Long? {
         if (raw == null) return null
@@ -256,23 +223,17 @@ object CsvImporter {
         "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd",
     )
 
-
-
-
-
     private fun buildHeader(row: List<String>): Map<String, Int> {
         val map = HashMap<String, Int>()
         row.forEachIndexed { index, name ->
             val key = name.lowercase(Locale.ROOT).filter { it.isLetterOrDigit() }
             for ((canonical, names) in ALIASES) {
 
-
                 if (key in names && canonical !in map) map[canonical] = index
             }
         }
         return map
     }
-
 
     private fun detectDelimiter(reader: BufferedReader): Char {
         reader.mark(1 shl 15)
@@ -290,7 +251,6 @@ object CsvImporter {
         }
         return counts.maxByOrNull { it.value }?.takeIf { it.value > 0 }?.key ?: ','
     }
-
 
     private fun readRows(reader: Reader, delimiter: Char, onRow: (List<String>) -> Unit) {
         val fields = ArrayList<String>()

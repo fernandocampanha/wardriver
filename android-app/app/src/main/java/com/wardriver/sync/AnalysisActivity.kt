@@ -8,18 +8,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
-
-
-
-
 class AnalysisActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAnalysisBinding
     private val db by lazy { WardriverDatabase.getInstance(this) }
-
-
-
 
     private val defaultNamePattern = Regex(
         "(?i)^(TP-LINK|VIVO|CLARO|OI-|OI_|SKY|NET_|NET-|TENDA|D-LINK|DLINK|HUAWEI|MULTILASER|" +
@@ -97,9 +89,6 @@ class AnalysisActivity : AppCompatActivity() {
         appendFirmwareSection(sb)
         return sb.toString()
     }
-
-
-
 
     private fun appendFirmwareSection(sb: StringBuilder) {
         val entries = FirmwareStatsLog.last(this, 400)

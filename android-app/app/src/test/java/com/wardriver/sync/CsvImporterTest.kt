@@ -14,8 +14,6 @@ class CsvImporterTest {
     private fun parse(text: String) = CsvImporter.parse(StringReader(text))
     private fun recordOf(text: String, bssid: String) = parse(text).records.single { it.bssid == bssid }
 
-
-
     @Test
     fun `le o CSV exportado pelo proprio app`() {
         val csv = """
@@ -62,8 +60,6 @@ class CsvImporterTest {
         assertEquals(2, result.records.size)
         assertEquals("linha1\nlinha2", result.records.first { it.bssid.endsWith("01") }.ssid)
     }
-
-
 
     @Test
     fun `le o CSV antigo sem cabecalho e trata Hidden como oculta`() {
@@ -116,8 +112,6 @@ class CsvImporterTest {
         }
     }
 
-
-
     @Test
     fun `le WiGLE, incluindo preambulo, criptografia e frequencia`() {
         val csv = """
@@ -136,8 +130,6 @@ class CsvImporterTest {
         assertTrue(v.lastSeenAtMs > 1_700_000_000_000L)
         assertEquals("OPEN", result.records.first { it.bssid.endsWith("02") }.encryption)
     }
-
-
 
     @Test
     fun `ponto e virgula com virgula decimal, BOM e CRLF`() {
@@ -196,8 +188,6 @@ class CsvImporterTest {
         assertEquals(0, result.records.size)
         assertEquals(0, result.rowsRead)
     }
-
-
 
     private fun rec(
         bssid: String = "AA:BB:CC:DD:EE:01", ssid: String = "", rssi: Int = -70,

@@ -1,4 +1,3 @@
-
 import logging
 import hashlib
 import time
@@ -78,7 +77,6 @@ def _row_to_network(r) -> Network:
     return Network(bssid=r.bssid, ssid=r.ssid, ssid_hidden=bool(r.ssid_hidden), channel=r.channel, rssi=r.rssi,
                    encryption=r.encryption, times_seen=int(r.times_seen), wps_active=bool(r.wps_active),
                    lat=r.lat, lon=r.lon, last_session_id=r.last_session_id, last_seen_at_ms=int(r.last_seen_at_ms))
-
 
 def _network_to_row(n: Network, now: int) -> dict:
     return {"bssid": n.bssid, "ssid": n.ssid, "ssid_hidden": n.ssid_hidden, "channel": n.channel, "rssi": n.rssi,

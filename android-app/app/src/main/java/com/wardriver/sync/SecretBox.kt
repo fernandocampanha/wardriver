@@ -9,12 +9,6 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-
-
-
-
-
-
 object SecretBox {
     private const val ALIAS = "wardriver_cloud_token_v1"
     private const val PROVIDER = "AndroidKeyStore"
