@@ -20,6 +20,25 @@ private class FakeDao : NetworkDao {
     }
     override suspend fun getAll(): List<NetworkRecord> = rows.values.sortedBy { it.bssid }
     override suspend fun getAllWithCoordinates(): List<NetworkRecord> = getAll().filter { it.lat != null && it.lon != null }
+    override suspend fun getAllWithoutCoordinates(): List<NetworkRecord> = getAll().filter { it.lat == null || it.lon == null }
+    override suspend fun getNearest(lat: Double, lon: Double, limit: Int): List<NetworkRecord> =
+        getAllWithCoordinates()
+            .sortedBy { (it.lat!! - lat) * (it.lat!! - lat) + (it.lon!! - lon) * (it.lon!! - lon) }
+            .take(limit)
+    override suspend fun getInBoundingBox(minLat: Double, maxLat: Double, minLon: Double, maxLon: Double, limit: Int): List<NetworkRecord> =
+        getAllWithCoordinates()
+            .filter { it.lat!! in minLat..maxLat && it.lon!! in minLon..maxLon }
+            .sortedBy { it.bssid }
+            .take(limit)
+    override suspend fun getPositionBounds(): PositionBounds {
+        val positioned = getAllWithCoordinates()
+        if (positioned.isEmpty()) return PositionBounds(null, null, null, null)
+        return PositionBounds(
+            positioned.minOf { it.lat!! }, positioned.maxOf { it.lat!! },
+            positioned.minOf { it.lon!! }, positioned.maxOf { it.lon!! },
+        )
+    }
+    override suspend fun countWithPosition(): Int = getAllWithCoordinates().size
     override suspend fun count(): Int = rows.size
     override suspend fun getSeenBetween(since: Long, until: Long): List<NetworkRecord> =
         rows.values.filter { it.lastSeenAtMs in since..until }.sortedWith(compareBy({ it.lastSeenAtMs }, { it.bssid }))

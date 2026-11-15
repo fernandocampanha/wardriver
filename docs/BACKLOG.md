@@ -1166,3 +1166,48 @@ como temporaria no item 18. Removido: campo `diag_seen` e o bloco `DIAG_SEEN_*`/
 `WardriverSyncService.kt` (app). Nenhuma outra parte do sistema dependia disso — registro de 71 bytes
 e protocolo de sync inalterados. **Verificado:** build limpo do firmware e `host_tests/sniffer`
 continuam passando; app compila e os testes JVM continuam passando.
+
+## 20. Mapa do app carregando a tabela inteira a cada abertura/sync: viewport-lazy-loading por proximidade (2026-11-15) — RESOLVIDO
+
+**Sintoma relatado pela usuaria:** no app mobile, o mapa demora muito para carregar e trava/derruba o
+app ("causando crashes"), sobretudo com o volume real de redes coletado (bem alem das 12,6 mil+ com
+posicao da viagem do item 16).
+
+**Causa raiz:** `MapActivity.loadNetworks()` chamava `NetworkDao.getAll()` — a tabela `networks`
+INTEIRA, com todas as colunas — toda vez que a tela do mapa abria, E de novo a cada evento de
+`observeChanges()` (que dispara repetidamente durante uma sincronizacao ativa, pois o `NetworkStore`
+faz upsert em lotes). Cada disparo reconstruia do zero o `SimpleFastPointOverlay` com a lista completa.
+O item 16 ja tinha trocado Marker-por-rede por um unico `SimpleFastPointOverlay` (bom para desenhar
+muitos pontos de uma vez), mas nao resolveu o fato de **carregar e redesenhar tudo de uma vez a cada
+mudanca no banco** — por isso o T41 da Matriz de Testes seguia "Parcial", sem validacao em campo com
+volume real em movimento.
+
+**Correcao:** carga por viewport (sob demanda), nunca a tabela inteira:
+- `NetworkDao.kt`: novas queries `getNearest(lat, lon, limit)` (ordenada por distancia euclidiana ao
+  quadrado — suficiente na escala de uma cidade, mesmo criterio pragmatico ja usado em outras partes do
+  projeto), `getInBoundingBox(minLat, maxLat, minLon, maxLon, limit)`, `getPositionBounds()` (agregado
+  MIN/MAX, sem trazer linhas), `countWithPosition()` e `getAllWithoutCoordinates()`.
+- `MapActivity.kt`: `loadInitial()` carrega so as `MAP_POINT_LIMIT` (3000) redes mais proximas da
+  localizacao conhecida (usuario, ultima posicao, ou centro da nuvem de pontos se ainda nao ha fix de
+  GPS) — nao a tabela inteira. Um `MapListener` dispara `loadViewport()` (debounced, 400 ms) a cada
+  pan/zoom, trazendo so o que esta dentro do viewport atual e fundindo no cache local sem redesenhar o
+  que ja estava carregado quando nada mudou. `fitAll()` (botao "Todas") usa so o agregado MIN/MAX para
+  calcular o zoom, sem carregar nada; o proprio `loadViewport` cuida do que cair na tela depois do zoom.
+  `observeDatabaseChanges()` agora so atualiza o viewport atual a cada tick (custo limitado ao que esta
+  em tela), nao a tabela inteira. A busca por texto continua varrendo o banco inteiro (via
+  `getAllWithCoordinates`/`getAllWithoutCoordinates`, ja existentes) porque o usuario pode estar
+  procurando uma rede fora da area visivel no momento — mas so roda sob acao explicita do usuario
+  (debounced), nao a cada sync.
+
+**Verificado em hardware real (celular Samsung SM-A736B, via adb debugging sem fio):** app reinstalado
+(precisou desinstalar por incompatibilidade de assinatura com a chave de debug anterior — banco de
+28.082 redes, 17.144 com posicao, foi salvo com `run-as`/backup antes e restaurado depois, dado
+confirmado integro e completo nos dois momentos). Mapa abriu sem crash carregando so 5595 de 17144 redes
+com posicao; apos duas rajadas de pan, foram carregadas mais 3 redes sob demanda (5598), sem recarregar
+as 5595 ja presentes; busca por "oculta" encontrou 8111 no mapa + 5881 so na lista (sem posicao),
+varrendo o banco inteiro como esperado. Sem FATAL/AndroidRuntime no logcat em nenhum passo. Memoria do
+processo em uso normal (heap Dalvik alocado ~16,5 MB). **Nao testado:** uso prolongado em campo em
+movimento real (so testado parado, sem fix de GPS — sem internet no momento do teste).
+
+**Build:** `testDebugUnitTest` e `assembleDebug` passam (o `FakeDao` de `NetworkStoreTest.kt` recebeu
+implementacoes das queries novas).

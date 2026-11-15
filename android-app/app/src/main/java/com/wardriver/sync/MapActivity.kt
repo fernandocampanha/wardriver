@@ -29,6 +29,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
@@ -69,9 +72,12 @@ class MapActivity : AppCompatActivity() {
 
     private var openBssid: String? = null
 
-    private var allWithPosition: List<Positioned> = emptyList()
+    // redes com posicao ja carregadas do banco: inicialmente as mais proximas da localizacao,
+    // depois o que o usuario for revelando ao navegar pelo mapa (viewport). Nunca a tabela inteira.
+    private val loaded = LinkedHashMap<String, Positioned>()
     private var matched: List<Positioned> = emptyList()
-    private var withoutCoordinates: List<NetworkRecord> = emptyList()
+    private var totalWithPosition = -1
+    private var totalWithoutPosition = -1
 
     private var myLocation: MyLocationNewOverlay? = null
 
@@ -79,6 +85,7 @@ class MapActivity : AppCompatActivity() {
 
     private var query = NetworkSearch.Query.parse("")
     private val applySearchRunnable = Runnable { applyFilter(focus = FocusMode.ONLY_IF_SINGLE) }
+    private val loadViewportRunnable = Runnable { loadViewport() }
 
     private enum class FocusMode { NONE, ONLY_IF_SINGLE, ALL_MATCHES }
 
@@ -106,9 +113,20 @@ class MapActivity : AppCompatActivity() {
         binding.mapView.setMultiTouchControls(true)
         binding.mapView.controller.setZoom(USER_ZOOM)
 
-        binding.buttonRefreshMap.setOnClickListener { loadNetworks() }
+        binding.buttonRefreshMap.setOnClickListener { loadViewport() }
         binding.buttonShowAll.setOnClickListener { fitAll() }
         binding.buttonMyLocation.setOnClickListener { recenterOnUser() }
+
+        binding.mapView.addMapListener(object : MapListener {
+            override fun onScroll(event: ScrollEvent?): Boolean {
+                scheduleViewportLoad()
+                return true
+            }
+            override fun onZoom(event: ZoomEvent?): Boolean {
+                scheduleViewportLoad()
+                return true
+            }
+        })
 
         binding.editMapSearch.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -138,7 +156,7 @@ class MapActivity : AppCompatActivity() {
             locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
-        loadNetworks()
+        loadInitial()
         observeDatabaseChanges()
     }
 
@@ -210,17 +228,72 @@ class MapActivity : AppCompatActivity() {
         binding.mapView.controller.animateTo(here)
     }
 
-    private fun loadNetworks() {
+    /** Primeira carga: so as redes mais proximas da localizacao conhecida (usuario, ultima posicao ou
+     *  centro da nuvem de pontos), nunca a tabela inteira. O resto entra sob demanda via [loadViewport]. */
+    private fun loadInitial() {
         lifecycleScope.launch {
-            val all = withContext(Dispatchers.IO) { db.networkDao().getAll() }
-            reload(all)
+            val center = referencePoint()
+            if (center != null) {
+                val nearest = withContext(Dispatchers.IO) {
+                    db.networkDao().getNearest(center.latitude, center.longitude, MAP_POINT_LIMIT)
+                }
+                mergeLoaded(nearest)
+            }
+            refreshTotals()
             applyFilter(focus = FocusMode.NONE)
 
-            if (!centeredOnUser) {
-
-                fitAll(stopFollowing = false)
-            }
+            if (!centeredOnUser) fitAll(stopFollowing = false)
         }
+    }
+
+    /** Ponto de referencia para a carga inicial: localizacao do usuario/ultima conhecida, ou o
+     *  centro da nuvem de pontos ja coletada (quando ainda nao ha fix de GPS). */
+    private suspend fun referencePoint(): GeoPoint? {
+        myLocation?.myLocation?.let { return it }
+        lastKnownLocation()?.let { return GeoPoint(it) }
+        val bounds = withContext(Dispatchers.IO) { db.networkDao().getPositionBounds() }
+        val minLat = bounds.minLat; val maxLat = bounds.maxLat
+        val minLon = bounds.minLon; val maxLon = bounds.maxLon
+        if (minLat == null || maxLat == null || minLon == null || maxLon == null) return null
+        return GeoPoint((minLat + maxLat) / 2, (minLon + maxLon) / 2)
+    }
+
+    /** Carrega sob demanda o que estiver dentro do viewport atual do mapa, sem repetir o que ja
+     *  foi carregado. Chamado (debounced) a cada pan/zoom do usuario. */
+    private fun loadViewport() {
+        val box = binding.mapView.boundingBox ?: return
+        lifecycleScope.launch {
+            val inView = withContext(Dispatchers.IO) {
+                db.networkDao().getInBoundingBox(box.latSouth, box.latNorth, box.lonWest, box.lonEast, MAP_POINT_LIMIT)
+            }
+            if (mergeLoaded(inView)) applyFilter(focus = FocusMode.NONE)
+        }
+    }
+
+    private fun scheduleViewportLoad() {
+        handler.removeCallbacks(loadViewportRunnable)
+        handler.postDelayed(loadViewportRunnable, VIEWPORT_DEBOUNCE_MS)
+    }
+
+    /** Funde redes recem-lidas do banco no cache local (sem descartar o que ja estava carregado).
+     *  Retorna true se algo novo ou diferente entrou, para só então valer a pena reconstruir o overlay. */
+    private fun mergeLoaded(records: List<NetworkRecord>): Boolean {
+        var changed = false
+        for (net in records) {
+            val lat = net.lat
+            val lon = net.lon
+            if (lat == null || lon == null) continue
+            val positioned = Positioned(net, GeoPoint(lat, lon))
+            val previous = loaded.put(net.bssid, positioned)
+            if (previous == null || previous.net != net) changed = true
+        }
+        return changed
+    }
+
+    private suspend fun refreshTotals() {
+        totalWithPosition = withContext(Dispatchers.IO) { db.networkDao().countWithPosition() }
+        val total = withContext(Dispatchers.IO) { db.networkDao().count() }
+        totalWithoutPosition = total - totalWithPosition
     }
 
     private fun observeDatabaseChanges() {
@@ -228,62 +301,68 @@ class MapActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 db.networkDao().observeChanges().collectLatest {
                     delay(LIVE_REFRESH_DEBOUNCE_MS)
-                    val all = withContext(Dispatchers.IO) { db.networkDao().getAll() }
-                    reload(all)
-                    applyFilter(focus = FocusMode.NONE)
+                    refreshTotals()
+                    loadViewport()
+                    if (!query.isEmpty) applyFilter(focus = FocusMode.NONE)
                 }
             }
         }
-    }
-
-    private fun reload(all: List<NetworkRecord>) {
-        val positioned = ArrayList<Positioned>(all.size)
-        val noCoordinates = ArrayList<NetworkRecord>()
-        for (net in all) {
-            val lat = net.lat
-            val lon = net.lon
-            if (lat == null || lon == null) noCoordinates.add(net) else positioned.add(Positioned(net, GeoPoint(lat, lon)))
-        }
-        allWithPosition = positioned
-        withoutCoordinates = noCoordinates
     }
 
     private fun applyFilter(focus: FocusMode) {
         val q = query
-        matched = if (q.isEmpty) allWithPosition else allWithPosition.filter { q.matches(it.net) }
-
-        rebuildOverlay()
-
-        binding.textMapCount.text = if (q.isEmpty) {
-            buildString {
-                append("${matched.size} rede(s) no mapa")
-                if (withoutCoordinates.isNotEmpty()) append(" · ${withoutCoordinates.size} sem posicao")
-            }
-        } else {
-            val onlyInList = withoutCoordinates.count { q.matches(it) }
-            buildString {
-                append("${matched.size} de ${allWithPosition.size} no mapa")
-                if (onlyInList > 0) append(" · $onlyInList achada(s) so na lista (sem posicao)")
-            }
+        if (q.isEmpty) {
+            matched = loaded.values.toList()
+            rebuildOverlay()
+            updateCountLabel(q)
+            return
         }
 
-        if (q.isEmpty || focus == FocusMode.NONE) return
-        when {
-            matched.isEmpty() -> {
-                if (focus == FocusMode.ALL_MATCHES) {
-                    Toast.makeText(this, "Nenhuma rede encontrada no mapa", Toast.LENGTH_SHORT).show()
+        // busca: precisa olhar o banco inteiro (não só o que já está carregado no viewport),
+        // já que o usuário pode estar procurando uma rede fora da área visível no momento.
+        lifecycleScope.launch {
+            val (positionedHits, unpositionedHits) = withContext(Dispatchers.IO) {
+                db.networkDao().getAllWithCoordinates().filter { q.matches(it) } to
+                    db.networkDao().getAllWithoutCoordinates().count { q.matches(it) }
+            }
+            mergeLoaded(positionedHits)
+            matched = positionedHits.map { Positioned(it, GeoPoint(it.lat!!, it.lon!!)) }
+            rebuildOverlay()
+            updateCountLabel(q, onlyInListCount = unpositionedHits)
+
+            if (focus == FocusMode.NONE) return@launch
+            when {
+                matched.isEmpty() -> {
+                    if (focus == FocusMode.ALL_MATCHES) {
+                        Toast.makeText(this@MapActivity, "Nenhuma rede encontrada no mapa", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                matched.size == 1 -> {
+                    myLocation?.disableFollowLocation()
+                    val only = matched[0]
+                    binding.mapView.controller.setZoom(SEARCH_HIT_ZOOM)
+                    binding.mapView.controller.animateTo(only.point)
+                    openInfo(only)
+                }
+                focus == FocusMode.ALL_MATCHES -> {
+                    myLocation?.disableFollowLocation()
+                    zoomToPoints(matched.map { it.point })
                 }
             }
-            matched.size == 1 -> {
-                myLocation?.disableFollowLocation()
-                val only = matched[0]
-                binding.mapView.controller.setZoom(SEARCH_HIT_ZOOM)
-                binding.mapView.controller.animateTo(only.point)
-                openInfo(only)
+        }
+    }
+
+    private fun updateCountLabel(q: NetworkSearch.Query, onlyInListCount: Int = 0) {
+        binding.textMapCount.text = if (q.isEmpty) {
+            buildString {
+                append("${matched.size} rede(s) carregada(s) no mapa")
+                if (totalWithPosition >= 0) append(" de $totalWithPosition com posição")
+                if (totalWithoutPosition > 0) append(" · $totalWithoutPosition sem posição")
             }
-            focus == FocusMode.ALL_MATCHES -> {
-                myLocation?.disableFollowLocation()
-                zoomToPoints(matched.map { it.point })
+        } else {
+            buildString {
+                append("${matched.size} encontrada(s) no mapa")
+                if (onlyInListCount > 0) append(" · $onlyInListCount achada(s) so na lista (sem posicao)")
             }
         }
     }
@@ -328,12 +407,19 @@ class MapActivity : AppCompatActivity() {
 
     private fun fitAll(stopFollowing: Boolean = true) {
         if (stopFollowing) myLocation?.disableFollowLocation()
-        val points = allWithPosition.map { it.point }
-        if (points.isEmpty()) {
-            Toast.makeText(this, "Nenhuma rede com coordenadas ainda", Toast.LENGTH_LONG).show()
-            return
+        lifecycleScope.launch {
+            // so os extremos (MIN/MAX), nao a tabela inteira: o viewport resultante carrega o
+            // que estiver dentro dele sozinho, via loadViewport, quando o pan/zoom terminar.
+            val bounds = withContext(Dispatchers.IO) { db.networkDao().getPositionBounds() }
+            val minLat = bounds.minLat; val maxLat = bounds.maxLat
+            val minLon = bounds.minLon; val maxLon = bounds.maxLon
+            if (minLat == null || maxLat == null || minLon == null || maxLon == null) {
+                Toast.makeText(this@MapActivity, "Nenhuma rede com coordenadas ainda", Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            zoomToPoints(listOf(GeoPoint(minLat, minLon), GeoPoint(maxLat, maxLon)))
+            scheduleViewportLoad()
         }
-        zoomToPoints(points)
     }
 
     private fun zoomToPoints(points: List<GeoPoint>) {
@@ -367,6 +453,7 @@ class MapActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         handler.removeCallbacks(applySearchRunnable)
+        handler.removeCallbacks(loadViewportRunnable)
         infoWindow.close()
         binding.mapView.onDetach()
         super.onDestroy()
@@ -377,6 +464,11 @@ class MapActivity : AppCompatActivity() {
         private const val SEARCH_HIT_ZOOM = 18.0
         private const val SEARCH_DEBOUNCE_MS = 250L
         private const val LIVE_REFRESH_DEBOUNCE_MS = 1200L
+        private const val VIEWPORT_DEBOUNCE_MS = 400L
         private const val MIN_BOX_SPAN_DEG = 1e-5
+
+        // teto de redes carregadas por vez (viewport ou carga inicial por proximidade); evita o
+        // travamento/crash de carregar e desenhar a tabela inteira de uma vez (item 16/T41 do BACKLOG).
+        private const val MAP_POINT_LIMIT = 3000
     }
 }
